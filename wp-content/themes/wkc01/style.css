@@ -31,6 +31,7 @@ img {
 
 header {
     display: grid;
+    box-sizing: border-box;
     grid-template-columns: 33.33% 33.33% 33.33%;
     grid-template-rows: auto;
     grid-template-areas: 
@@ -206,7 +207,10 @@ ul.mobile-menu li {
     .tickets-link span {
         display: block;
         margin-right: 40px;
+        position: relative;
         text-align: right;
+        width: auto;
+        z-index: 1;
     }
 
     .tickets-link i {
@@ -221,6 +225,17 @@ ul.mobile-menu li {
     #header-search-field,
     .search-field-container {
         grid-area: tickets-link;
+    }
+
+    #header-search-toggle {
+        cursor: pointer;
+    }
+
+    #header-search-field {
+        margin-right: 40px;
+        position: relative;
+        width: calc( 100% - 40px );
+        z-index: 2;
     }
 
     .header-logo {
