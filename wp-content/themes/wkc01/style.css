@@ -31,6 +31,7 @@ img {
 
 header {
     display: grid;
+    box-sizing: border-box;
     grid-template-columns: 33.33% 33.33% 33.33%;
     grid-template-rows: auto;
     grid-template-areas: 
@@ -207,6 +208,7 @@ ul.mobile-menu li {
         display: block;
         margin-right: 40px;
         text-align: right;
+        width: auto;
     }
 
     .tickets-link i {
