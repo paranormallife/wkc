@@ -1,0 +1,253 @@
+/*
+Theme Name: WKC Custom Theme
+Theme URI:
+Author: Elliot Toman
+Author URI: https://www.asubtleweb.com
+Description: A custom theme for West Kortright Center
+Version: 1.0
+License: 
+License URI: 
+Tags: 
+Text Domain: 
+*/
+
+@import url('assets/fonts/fonts.css');
+
+
+* { margin: 0px; padding: 0px; }
+
+body, html { height: 100%; }
+
+body { font: 400 16px 'Steagal','Prompt', sans-serif; color: black; margin: 0px; }
+
+a {
+    color: #1d5565;
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+}
+
+header {
+    display: grid;
+    grid-template-columns: 33.33% 33.33% 33.33%;
+    grid-template-rows: auto;
+    grid-template-areas: 
+      "site-name site-name site-name"
+      "logo logo logo"
+      "tickets-link nav search"
+      "mobile-menu mobile-menu mobile-menu ";
+    margin: 0 auto;
+    width: calc( 100% - 50px );
+}
+
+header i.fas {
+    color: #1d5565;
+    font-size: 24px;
+}
+
+.site-name {
+    background-color: #1d5565;
+    grid-area: site-name;
+    margin: 0 0 0 -25px;
+    width: calc( 100% + 50px );
+}
+
+.site-name a {
+    color: white;
+    display: block;
+    font: bold 24px 'Steagal', 'Prompt', sans-serif;
+    padding: 10px 25px;
+    text-align: center;
+}
+
+.tickets-link {
+    grid-area: tickets-link;
+}
+
+.tickets-link span {
+    display: none;
+}
+
+.header-logo {
+    grid-area: logo;
+    margin: 25px auto;
+}
+
+.search-field {
+    grid-area: search;
+}
+
+.search-field i.fas {
+    display: block;
+    text-align: right;
+}
+
+.menu-icon {
+    display: block;
+    grid-area: nav;
+    text-align: center;
+}
+
+.menu-icon .close {
+    display: none;
+}
+
+.menu-icon.active .close {
+    display: block;
+}
+
+.menu-icon.active .open {
+    display: none;
+}
+
+ul.mobile-menu {
+    display: block;
+    grid-area: mobile-menu;
+    list-style-type: none;
+    margin: 25px 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0, 1, 0, 1);
+}
+
+ul.mobile-menu.active {
+    max-height: 9999px;
+    transition: max-height 1s ease-in-out;
+}
+
+ul.mobile-menu li {
+    display: block;
+    font-size: 24px;
+    padding: 5px 0;
+}
+
+#header-search-toggle {
+    display: block;
+    grid-area: search;
+    text-align: right;
+}
+
+#header-search-toggle.active .icon {
+    opacity: 0.5;
+}
+
+#header-search-field {
+    grid-area: mobile-menu;
+}
+
+#header-search-field #search {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font: normal 24px 'Steagal', 'Prompt', sans-serif;
+    display: none;
+    margin: 25px 0;
+    width: 100%;
+}
+
+#header-search-field.active #search {
+    display: block;
+}
+
+#header-search-field #search:focus {
+    outline: none;
+}
+
+
+.video-container {
+    float: none; clear: both;
+	position: relative;
+    padding-bottom: 56.25%;
+    padding-top: 30px; height: 0; overflow: hidden;
+}
+ 
+.video-container iframe,
+.video-container object,
+.video-container embed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+@media screen and ( min-width: 799px ) {
+
+    header {
+        align-items: center;
+        display: grid;
+        grid-template-columns: 33.33% 33.33% 33.33%;
+        grid-template-rows: auto;
+        grid-template-areas: 
+          "site-name logo tickets-link"
+          "nav nav nav";
+        margin: 0 auto;
+        max-width: 1280px;
+        padding: 0 10px;
+        width: 100%;
+    }
+
+    .site-name {
+        background-color: transparent;
+        margin: 0;
+        width: auto;
+    }
+
+    .site-name a {
+        color: #1d5565;
+        padding: 0;
+        text-align: left;
+    }
+
+    .tickets-link span {
+        display: block;
+        margin-right: 40px;
+        text-align: right;
+    }
+
+    .tickets-link i {
+        display: none;
+    }
+
+    #navIcon {
+        display: none;
+    }
+
+    #header-search-toggle,
+    #header-search-field,
+    .search-field-container {
+        grid-area: tickets-link;
+    }
+
+    .header-logo {
+        margin: 10px auto;
+        max-width: 270px;
+    }
+    
+    ul.nav-menu {
+        display: block;
+        grid-area: nav;
+        list-style-type: none;
+        margin: 0 auto;
+        max-height: 300px;
+        text-align: center;
+    }
+    
+    ul.nav-menu li {
+        display: inline-block;
+        font-size: 18px;
+        padding: 0 10px;
+        text-transform: uppercase;
+    }
+
+    .site-name a,
+    .tickets-link a,
+    .nav-menu a {
+        font: normal 24px 'Steagal Rough', 'Prompt', sans-serif;
+    }
+
+}

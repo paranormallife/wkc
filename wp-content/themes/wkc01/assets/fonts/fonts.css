@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css?family=Prompt:400,700');
+
+@font-face {
+    font-family: 'Steagal';
+    src: url(steagal.otf);
+    font-style: normal;
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'Steagal';
+    src: url(steagal-italic.otf);
+    font-style: italic;
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'Steagal';
+    src: url(steagal-bold.otf);
+    font-style: normal;
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: 'Steagal Rough';
+    src: url(steagal-rough.otf);
+    font-style: normal;
+    font-weight: normal;
+}
+
