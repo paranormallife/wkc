@@ -198,6 +198,11 @@ footer h2 {
     padding-bottom: 0.5em;
 }
 
+.footer-contact {
+    display: block;
+    margin-bottom: 1em;
+}
+
 .footer-contact .map {
     display: inline-block;
     margin-left: 10px;
@@ -264,6 +269,28 @@ footer input:focus {
 
 .footer-actions span {
     cursor: pointer;
+}
+
+.footer-nysca {
+    display: block;
+    margin: 10px auto;
+    max-width: 300px;
+}
+
+.footer-nysca p {
+    font-size: 14px;
+    font-style: italic;
+}
+
+.footer-nysca img {
+    display: block;
+    margin: 0 auto 10px auto;
+    max-width: 150px;
+}
+
+.footer-actions h2,
+.footer-nysca h2 {
+    display: none;
 }
 
 .video-container {
@@ -370,6 +397,53 @@ footer input:focus {
     .tickets-link a,
     .nav-menu a {
         font: normal 18px 'Steagal Rough', 'Prompt', sans-serif;
+    }
+
+    footer {
+        display: grid;
+        grid-template-columns: calc( 33.33% - 10px)  calc( 33.33% - 10px)  calc( 33.33% - 10px);
+        grid-template-rows: auto;
+        grid-template-areas:
+        "contact actions nysca"
+        "copyright copyright copyright";
+        justify-content: space-between;
+        padding: 20px 10px;
+    }
+
+    footer a:hover,
+    .footer-actions span:hover {
+        color: black;
+    }
+
+    .footer-contact {
+        grid-area: contact;
+    }
+
+    .footer-actions {
+        grid-area: actions;
+    }
+
+    .footer-actions ul {
+        text-align: left;
+    }
+
+    .footer-nysca {
+        grid-area: nysca;
+        margin: 0;
+        max-width: 100%;
+    }
+
+    .footer-copyright {
+        grid-area: copyright;
+    }
+
+    .footer-actions li {
+        margin: 0 10px 1em 0;
+    }
+
+    .footer-actions h2,
+    .footer-nysca h2 {
+        display: block;
     }
 
 }
