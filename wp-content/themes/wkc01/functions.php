@@ -81,7 +81,7 @@ function asw_register_custom_types() {
 			  'has_archive' => false,
 			  'menu_icon' => 'dashicons-images-alt',
 			  'exclude_from_search' => true, // If this is set to TRUE, Taxonomy pages won't work.
-			  'hierarchical' => false,
+			  'hierarchical' => true,
 			  'menu_position' => null,
 			  'supports' => array('title', 'thumbnail')
 		 )
