@@ -58,33 +58,32 @@ add_action('init', 'js_init');
 function asw_register_custom_types() {
 	
 
-	// FRONT PAGE HEADER/BANNER
+	// FRONT PAGE HERO
 	register_post_type(
-		  'headers', array(
+		  'hero', array(
 			  'labels' => array(
-				  'name' => 'Headers', 
-				  'singular_name' => 'Header', 
-				  'add_new' => 'Add new header', 
-				  'add_new_item' => 'Add new header', 
-				  'new_item' => 'New header', 
-				  'view_item' => 'View headers',
-				  'edit_item' => 'Edit header',
-				  'not_found' =>  __('No headers found'),
-				  'not_found_in_trash' => __('No headers found in Trash')
+				  'name' => 'Homepage Slides', 
+				  'singular_name' => 'Homepage Carousel', 
+				  'add_new' => 'Add new slide', 
+				  'add_new_item' => 'Add new slide', 
+				  'new_item' => 'New slide', 
+				  'view_item' => 'View slides',
+				  'edit_item' => 'Edit slide',
+				  'not_found' =>  __('No slides found'),
+				  'not_found_in_trash' => __('No slides found in Trash')
 			  ), 
 			  'public' => true,
 			  'publicly_queryable' => true,
 			  'show_ui' => true,
 			  'query_var' => true,
-			  'rewrite' => array( 'slug' => 'headers','with_front' => FALSE),
+			  'rewrite' => false,
 			  'capability_type' => 'post',
-			  'has_archive' => 'true',
-			  'menu_icon' => '',
-			  'exclude_from_search' => false, // If this is set to TRUE, Taxonomy pages won't work.
+			  'has_archive' => false,
+			  'menu_icon' => 'dashicons-images-alt',
+			  'exclude_from_search' => true, // If this is set to TRUE, Taxonomy pages won't work.
 			  'hierarchical' => false,
 			  'menu_position' => null,
-			  'supports' => array('title', 'thumbnail', 'editor'),
-			  'taxonomies' => array('image_category')
+			  'supports' => array('title', 'thumbnail')
 		 )
 	  );
 	
@@ -97,12 +96,26 @@ function asw_register_custom_types() {
 
 
 function asw_add_meta() {
-	add_meta_box('page_summary', 'Summary', 'summary', array('page', 'post'), 'side', 'high');
+	add_meta_box('hero_subtitle_field', 'Subtitle', 'hero_subtitle', array('hero'), 'normal', 'high');
+	add_meta_box('hero_summary_field', 'Summary', 'hero_summary', array('hero'), 'normal', 'high');
+	add_meta_box('hero_url_field', 'URL', 'hero_url', array('hero'), 'normal', 'high');
 }
 
-function summary($post) {
-    echo '<div id="summary">';
-    echo '<textarea style="width:95%;" id="summary" name="summary" placeholder="250 Characters Max" maxlength="250">' . get_post_meta($post->ID, 'summary', true) . '</textarea>';
+function hero_subtitle($post) {
+    echo '<div id="hero_subtitle">';
+    echo '<input type="text" style="width:95%;" id="hero_subtitle" name="hero_subtitle" placeholder="Subtitle" value="' . get_post_meta($post->ID, 'hero_subtitle', true) . '" />';
+    echo '</div>';
+}
+
+function hero_summary($post) {
+    echo '<div id="hero_summary">';
+    echo '<textarea style="width:95%;" id="hero_summary" name="hero_summary" placeholder="Summary...">' . get_post_meta($post->ID, 'hero_summary', true) . '</textarea>';
+    echo '</div>';
+}
+
+function hero_url($post) {
+    echo '<div id="hero_url">';
+    echo '<input type="text" style="width:95%;" id="hero_url" name="hero_url" placeholder="/page-permalink" value="' . get_post_meta($post->ID, 'hero_url', true) . '" />';
     echo '</div>';
 }
 
@@ -118,8 +131,16 @@ function asw_save_meta($post_id) {
        return $post_id;
     }
 
-    if (isset($_POST['summary'])) {
-       update_post_meta($post_id, 'summary', $_POST['summary']);
+    if (isset($_POST['hero_subtitle'])) {
+       update_post_meta($post_id, 'hero_subtitle', $_POST['hero_subtitle']);
+    }
+
+    if (isset($_POST['hero_summary'])) {
+       update_post_meta($post_id, 'hero_summary', $_POST['hero_summary']);
+    }
+
+    if (isset($_POST['hero_url'])) {
+       update_post_meta($post_id, 'hero_url', $_POST['hero_url']);
     }
 	
 }
