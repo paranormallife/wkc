@@ -13,24 +13,17 @@
 
         <article class="swiper-slide">
             <div class="image">
-                <?php if( $url != '' ) {
-                    echo '<a class="slide" href="/' . $url . '" title="';
-                    the_title();
-                    echo '" style="background-image:url(\'' . $bg_image[0] . '\');">' ;
-                    the_title();
-                    echo '</a>';
-                } else {
-                    echo '<div class="slide" style="background-image:url(\'' . $bg_image[0] . '\');">' ;
-                    the_title();
-                    echo '</div>';
-                } ?>
-                
+                <?php 
+                  echo '<div class="slide" style="background-image:url(\'' . $bg_image[0] . '\');">' ;
+                  the_title();
+                  echo '</div>';
+                ?>  
             </div>
             <div class="content">
                 <h2><?php the_title(); ?></h2>
                 <?php if( $subtitle != '' ) { echo '<h3 class="subtitle">' . $subtitle . '</h3>'; } ?>
                 <?php if( $summary != '' ) { echo '<p class="summary">' . $summary . '</p>'; } ?>
-                <?php if( $url != '' ) { echo '<a class="url" href="/' . $url . '">Read More</a>'; } ?>
+                <?php if( $url != '' ) { echo '<a class="url" href="/' . $url . '"><span>Read More</span></a>'; } ?>
             </div>
         </article>
 
@@ -38,8 +31,8 @@
 
     </div>
     
-    <div class="swiper-button-next"></div>
-    <div class="swiper-button-prev"></div>
+    <div class="slide-next"><i class="fas fa-angle-right"></i></div>
+    <div class="slide-previous"><i class="fas fa-angle-left"></i></div>
     <div class="swiper-pagination"></div>
 
 </section>
@@ -59,8 +52,8 @@
 
     // Navigation arrows
     navigation: {
-      nextEl: '.swiper-button-next',
-      prevEl: '.swiper-button-prev',
+      nextEl: '.slide-next',
+      prevEl: '.slide-previous',
     },
 
     // And if we need scrollbar
