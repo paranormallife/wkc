@@ -13,7 +13,18 @@
 
         <article class="swiper-slide">
             <div class="image">
-                <img src="<?php echo $bg_image[0]; ?>" />
+                <?php if( $url != '' ) {
+                    echo '<a class="slide" href="/' . $url . '" title="';
+                    the_title();
+                    echo '" style="background-image:url(\'' . $bg_image[0] . '\');">' ;
+                    the_title();
+                    echo '</a>';
+                } else {
+                    echo '<div class="slide" style="background-image:url(\'' . $bg_image[0] . '\');">' ;
+                    the_title();
+                    echo '</div>';
+                } ?>
+                
             </div>
             <div class="content">
                 <h2><?php the_title(); ?></h2>
@@ -25,12 +36,12 @@
 
         <?php endwhile; wp_reset_postdata(); ?>
 
-
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-        <div class="swiper-pagination"></div>
-
     </div>
+    
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
+    <div class="swiper-pagination"></div>
+
 </section>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.4.6/js/swiper.min.js"></script>

@@ -310,6 +310,40 @@ footer input:focus {
     height: 100%;
 }
 
+#homepage_carousel {
+    display: block;
+    position: relative;
+}
+
+#homepage_carousel article {
+    display: block;
+    position: relative;
+}
+
+.swiper-slide .image {
+    position: relative;
+    z-index: 1;
+}
+
+.swiper-slide .image .slide {
+    background-position: center center;
+    background-size: cover;
+    display: block;
+    height: 300px;
+    position: relative;
+    text-indent: -9999px;
+    width: 100%;
+}
+
+.swiper-pagination {
+    display: block;
+    left: 0;
+    position: absolute;
+    top: 250px;
+    width: 100%;
+    z-index: 2;
+}
+
 @media screen and ( min-width: 799px ) {
 
     header {
