@@ -33,6 +33,14 @@ img {
     max-width: 100%;
 }
 
+h1 {
+    display: block;
+    font: bold 32px 'Steagal Rough','Prompt', sans-serif; 
+    margin: 0.5em 0;
+    text-align: center;
+    text-transform: uppercase;
+}
+
 h2 {
     display: block;
     font-size: 24px;
@@ -427,6 +435,13 @@ a.url span {
     z-index: 3;
 }
 
+main {
+    box-sizing: border-box;
+    display: table;
+    padding: 0 25px 50px 25px;
+    width: 100%;
+}
+
 @media screen and ( min-width: 799px ) {
 
     header {
@@ -437,7 +452,7 @@ a.url span {
         grid-template-areas: 
           "site-name logo tickets-link"
           "nav nav nav";
-        margin: 0 auto;
+        margin: 10px auto;
         max-width: 1280px;
         padding: 0 10px;
         width: 100%;
@@ -524,7 +539,15 @@ a.url span {
         "contact actions nysca"
         "copyright copyright copyright";
         justify-content: space-between;
+        margin: 0 auto;
+        max-width: 1280px;
         padding: 20px 10px;
+    }
+
+    .footer-wrapper {
+        background-color: #a49e40;
+        display: table;
+        width: 100%;
     }
 
     footer a:hover,
@@ -575,12 +598,16 @@ a.url span {
     .slide-previous {
         font-size: 48px;
         opacity: 0.5;
-        top: 10px;
+        top: 215px;
     }
 
     .slide-next:hover,
     .slide-previous:hover {
         opacity: 1;
+    }
+
+    .slide-previous {
+        display: none;
     }
 
     #homepage_carousel .content {
@@ -612,6 +639,18 @@ a.url span {
     #homepage_carousel .url:hover:before {
         right: -33px;
         transition: all 250ms linear 0s;
+    }
+
+    main {
+        margin: 0 auto;
+        max-width: 1280px;
+        padding: 10px 10px 50px 10px;
+    }
+
+    #home .post-content {
+        margin: 0 auto;
+        max-width: 600px;
+        text-align: center;
     }
 
 }
