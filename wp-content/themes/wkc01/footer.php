@@ -1,50 +1,54 @@
 <!-- FOOTER.PHP ++++++++++++++++++++++ -->
 
 
-<footer>
-    <div class="footer-contact">
-        <h2>West Kortright Centre</h2>
-        <p>49 West Kortright Church Road</p>
-        <p>East Meredith, NY 13757 <a class="map" href="/contact"><i class="fas fa-map-marker-alt map-icon"><span>Directions</span></i></a></p>
-        <p><a href="tel:+16072785454">607-278-5454</a></p>
-    </div>
-    <div class="footer-actions">
-        <h2>Follow Us</h2>
-        <div class="footer-social">
+<div class="footer-wrapper">
+
+    <footer>
+        <div class="footer-contact">
+            <h2>West Kortright Centre</h2>
+            <p>49 West Kortright Church Road</p>
+            <p>East Meredith, NY 13757 <a class="map" href="/contact"><i class="fas fa-map-marker-alt map-icon"><span>Directions</span></i></a></p>
+            <p><a href="tel:+16072785454">607-278-5454</a></p>
+        </div>
+        <div class="footer-actions">
+            <h2>Follow Us</h2>
+            <div class="footer-social">
+                <ul>
+                    <li class="email"><a href="mailto:info@westkc.org"><i class="fas fa-envelope-square"><span>info@westkc.org</span></i></a></li>
+                    <li class="facebook"><a target="_blank" href="https://www.facebook.com/westkortrightcentre"><i class="fab fa-facebook-square"><span>Facebook</span></i></a></li>
+                    <li class="instagram"><a target="_blank" href="https://instagram.com/westkortrightcentre"><i class="fab fa-instagram"><span>Instagram</span></i></a></li>
+                    <li class="twitter"><a target="_blank" href="https://twitter.com/49wkc"><i class="fab fa-twitter-square"><span>Twitter</span></i></a></li>
+                </ul>
+            </div>
             <ul>
-                <li class="email"><a href="mailto:info@westkc.org"><i class="fas fa-envelope-square"><span>info@westkc.org</span></i></a></li>
-                <li class="facebook"><a target="_blank" href="https://www.facebook.com/westkortrightcentre"><i class="fab fa-facebook-square"><span>Facebook</span></i></a></li>
-                <li class="instagram"><a target="_blank" href="https://instagram.com/westkortrightcentre"><i class="fab fa-instagram"><span>Instagram</span></i></a></li>
-                <li class="twitter"><a target="_blank" href="https://twitter.com/49wkc"><i class="fab fa-twitter-square"><span>Twitter</span></i></a></li>
+                <li class="donate"><a href="#">Donate</a></li>
+                <li class="search" id="footer_search_toggle_button"><span onclick="footerSearchToggle()">Search</span></li>
+                <li class="newsletter" id="footer_newsletter_toggle_button"><span onclick="footerNewsletterToggle()">Subscribe</span></li>
             </ul>
+            <div class="footer-search" id="footer_search_toggle">
+                <form action="/" method="get">
+                    <input type="text" name="s" id="search" placeholder="Search this site" value="<?php the_search_query(); ?>" />
+                    <input type="submit" value="Search" />
+                </form>
+            </div>
+            <div class="footer-newsletter" id="footer_newsletter_toggle">
+                <form>
+                    <input type="email" placeholder="yourname@example.com" />
+                    <input type="submit" value="Subscribe" />
+                </form>
+            </div>
         </div>
-        <ul>
-            <li class="donate"><a href="#">Donate</a></li>
-            <li class="search" id="footer_search_toggle_button"><span onclick="footerSearchToggle()">Search</span></li>
-            <li class="newsletter" id="footer_newsletter_toggle_button"><span onclick="footerNewsletterToggle()">Subscribe</span></li>
-        </ul>
-        <div class="footer-search" id="footer_search_toggle">
-            <form action="/" method="get">
-                <input type="text" name="s" id="search" placeholder="Search this site" value="<?php the_search_query(); ?>" />
-                <input type="submit" value="Search" />
-            </form>
+        <div class="footer-nysca">
+            <h2>New York State Council on the Arts</h2>
+            <?php get_template_part('snippets/nysca_logo'); ?>
+            <p>WKC programming is funded in part by New York State Council on the Arts with the support of Governor Andrew Cuomo and the New York State Legislature.</p>
         </div>
-        <div class="footer-newsletter" id="footer_newsletter_toggle">
-            <form>
-                <input type="email" placeholder="yourname@example.com" />
-                <input type="submit" value="Subscribe" />
-            </form>
+        <div class="footer-copyright">
+            &copy; <?php echo date('Y '); bloginfo('name'); ?>
         </div>
-    </div>
-    <div class="footer-nysca">
-        <h2>New York State Council on the Arts</h2>
-        <?php get_template_part('snippets/nysca_logo'); ?>
-        <p>WKC programming is funded in part by New York State Council on the Arts with the support of Governor Andrew Cuomo and the New York State Legislature.</p>
-    </div>
-    <div class="footer-copyright">
-        &copy; <?php echo date('Y '); bloginfo('name'); ?>
-    </div>
-</footer>
+    </footer>
+
+</div>
 
 <script>
 	function footerSearchToggle() {

@@ -33,6 +33,22 @@ img {
     max-width: 100%;
 }
 
+h1 {
+    display: block;
+    font: bold 32px 'Steagal Rough','Prompt', sans-serif; 
+    margin: 0.5em 0;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+h2 {
+    display: block;
+    font-size: 24px;
+    margin: 0.5em auto;
+    text-align: center;
+    text-transform: uppercase;
+}
+
 header {
     display: grid;
     box-sizing: border-box;
@@ -310,6 +326,179 @@ footer input:focus {
     height: 100%;
 }
 
+#homepage_carousel {
+    display: block;
+    position: relative;
+}
+
+#homepage_carousel article {
+    display: block;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.swiper-slide .image {
+    position: relative;
+    z-index: 1;
+}
+
+.swiper-slide .image .slide {
+    background-position: center center;
+    background-size: cover;
+    display: block;
+    height: 300px;
+    position: relative;
+    text-indent: -9999px;
+    width: 100%;
+}
+
+.slide-next,
+.slide-previous {
+    color: white;
+    cursor: pointer;
+    font-size: 24px;
+    position: absolute;
+    right: 10px;
+    top: 150px;
+    z-index: 2;
+}
+
+.slide-previous {
+    left: 10px;
+    right: unset;
+}
+
+#homepage_carousel .swiper-pagination {
+    display: block;
+    left: 0;
+    height: 10px;
+    position: absolute;
+    top: 250px;
+    width: 100%;
+    z-index: 2;
+}
+
+#homepage_carousel .swiper-pagination-bullet {
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    border-radius: 100%;
+    background: #FFF;
+    opacity: .5;
+}
+
+#homepage_carousel .swiper-pagination-bullet-active {
+    opacity: 1;
+    background: #a49e40;
+}
+
+#homepage_carousel .content {
+    box-sizing: border-box;
+    display: block;
+    padding: 0 25px;
+    text-align: center;
+    width: 100%;
+}
+
+#homepage_carousel .content .subtitle,
+#homepage_carousel .content .summary {
+    text-align: left;
+}
+
+a.url {
+    color: black;
+    display: inline-block;
+    font-weight: bold;
+    margin: 1em 0;
+    position: relative;
+    text-transform: uppercase;
+    z-index: 3;
+}
+
+a.url:before {
+    content: ' ';
+    display: block;
+    opacity: 0.5;
+    right: -18px;
+    position: absolute;
+    top: -5px;
+    z-index: 1;
+    width: 0;
+    height: 0;
+    border-top: 15px solid transparent;
+    border-left: 30px solid #a49e40;
+    border-bottom: 15px solid transparent;
+}
+
+a.url span {
+    position: relative;
+    z-index: 3;
+}
+
+main {
+    box-sizing: border-box;
+    display: table;
+    padding: 0 25px 50px 25px;
+    width: 100%;
+}
+
+.button {
+    box-sizing: border-box;
+    display: inline-block;
+    font-weight: bold;
+    margin: 10px 0;
+    padding: 5px 10px;
+    text-transform: uppercase;
+}
+
+.button.bordered {
+    border: 2px solid #1d5565;
+}
+
+.button span:after {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    content: "\f105";
+    display: inline-block;
+    margin-left: 5px;
+    transition: all 250ms linear 0s;
+}
+
+.button:hover span:after {
+    margin-left: 10px;
+    transition: all 250ms linear 0s;
+}
+
+ul.instagram-pics {
+    display: flex;
+    flex-wrap: wrap;
+    list-style-type: none;
+}
+
+.instagram-pics li {
+    flex-basis: 50%;
+    height: 0;
+    overflow: hidden;
+    padding-top: 50%;
+    position: relative;
+}
+
+.instagram-pics li a {
+    display: block;
+    left: 0;
+    position: absolute;
+    top: 0;
+}
+
+.instagram-pics li img {
+    transition: all 250ms linear 0s;
+}
+
+.instagram-pics li:hover img {
+    transform: scale(1.1);
+    transition: all 250ms linear 0s;
+}
+
 @media screen and ( min-width: 799px ) {
 
     header {
@@ -320,7 +509,7 @@ footer input:focus {
         grid-template-areas: 
           "site-name logo tickets-link"
           "nav nav nav";
-        margin: 0 auto;
+        margin: 10px auto;
         max-width: 1280px;
         padding: 0 10px;
         width: 100%;
@@ -374,7 +563,7 @@ footer input:focus {
 
     .header-logo {
         margin: 10px auto;
-        max-width: 270px;
+        max-width: 200px;
     }
     
     ul.nav-menu {
@@ -407,7 +596,15 @@ footer input:focus {
         "contact actions nysca"
         "copyright copyright copyright";
         justify-content: space-between;
+        margin: 0 auto;
+        max-width: 1280px;
         padding: 20px 10px;
+    }
+
+    .footer-wrapper {
+        background-color: #a49e40;
+        display: table;
+        width: 100%;
     }
 
     footer a:hover,
@@ -444,6 +641,78 @@ footer input:focus {
     .footer-actions h2,
     .footer-nysca h2 {
         display: block;
+    }
+
+    .swiper-slide .image .slide {
+        height: 500px;
+    }
+
+    #homepage_carousel .swiper-pagination {
+        top: 450px;
+    }
+
+    .slide-next,
+    .slide-previous {
+        font-size: 48px;
+        opacity: 0.5;
+        top: 215px;
+    }
+
+    .slide-next:hover,
+    .slide-previous:hover {
+        opacity: 1;
+    }
+
+    .slide-previous {
+        display: none;
+    }
+
+    #homepage_carousel .content {
+        background-color: rgba(255,255,255,0.8);
+        position: absolute;
+        padding: 30px;
+        bottom: 100px;
+        max-width: 500px;
+        text-align: left;
+        z-index: 5;
+    }
+
+    #homepage_carousel .content h2 {
+        font: bold 24px 'Steagal Rough', 'Prompt', sans-serif;
+        margin-bottom: 0;
+        text-align: left;
+    }
+
+    #homepage_carousel .content .subtitle {
+        font-size: 24px;
+        font-weight: normal;
+        margin-bottom: 0.5em;
+    }
+
+    #homepage_carousel .url:before {
+        transition: all 250ms linear 0s;
+    }
+
+    #homepage_carousel .url:hover:before {
+        right: -33px;
+        transition: all 250ms linear 0s;
+    }
+
+    main {
+        margin: 0 auto;
+        max-width: 1280px;
+        padding: 10px 10px 50px 10px;
+    }
+
+    #home .post-content {
+        margin: 0 auto;
+        max-width: 600px;
+        text-align: center;
+    }
+
+    .instagram-pics li {
+        flex-basis: 20%;
+        padding-top: 20%;
     }
 
 }

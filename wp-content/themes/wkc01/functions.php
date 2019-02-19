@@ -146,7 +146,19 @@ function asw_save_meta($post_id) {
 }
 
 
+function asw_widgets_init() {
 
+	register_sidebar( array(
+		'name'          => 'Home Instagram Feed',
+		'id'            => 'home_instagram',
+		'before_widget' => '<div>',
+		'after_widget'  => '</div>',
+		'before_title'  => '<h2>',
+		'after_title'   => '</h2>',
+	) );
+
+}
+add_action( 'widgets_init', 'asw_widgets_init' );
 
 
 ?>
