@@ -515,6 +515,10 @@ ul.instagram-pics {
         width: 100%;
     }
 
+    header a:hover {
+        color: black;
+    }
+
     .site-name {
         background-color: transparent;
         margin: 0;
