@@ -10,4 +10,6 @@
     </div>
 </main>
 
+<?php if (is_front_page()) { dynamic_sidebar( 'home_instagram' ); } ?>
+
 <?php get_footer(); ?>

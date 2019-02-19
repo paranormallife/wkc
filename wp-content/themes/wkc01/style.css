@@ -469,6 +469,36 @@ main {
     transition: all 250ms linear 0s;
 }
 
+ul.instagram-pics {
+    display: flex;
+    flex-wrap: wrap;
+    list-style-type: none;
+}
+
+.instagram-pics li {
+    flex-basis: 50%;
+    height: 0;
+    overflow: hidden;
+    padding-top: 50%;
+    position: relative;
+}
+
+.instagram-pics li a {
+    display: block;
+    left: 0;
+    position: absolute;
+    top: 0;
+}
+
+.instagram-pics li img {
+    transition: all 250ms linear 0s;
+}
+
+.instagram-pics li:hover img {
+    transform: scale(1.1);
+    transition: all 250ms linear 0s;
+}
+
 @media screen and ( min-width: 799px ) {
 
     header {
@@ -678,6 +708,11 @@ main {
         margin: 0 auto;
         max-width: 600px;
         text-align: center;
+    }
+
+    .instagram-pics li {
+        flex-basis: 20%;
+        padding-top: 20%;
     }
 
 }
