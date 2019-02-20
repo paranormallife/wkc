@@ -142,6 +142,41 @@ ul.mobile-menu li {
     display: block;
     font-size: 24px;
     padding: 5px 0;
+    position: relative;
+    text-transform: uppercase;
+}
+
+.menu-item-has-children:after {
+    color: rgba(0,0,0,0.25);
+    content: "\f107";
+    display: inline-block;
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+ul.sub-menu {
+    max-height: 0;
+    overflow: hidden;
+}
+
+.menu-item-has-children.active:after {
+    color: black;
+    content: '\f106';
+}
+
+.menu-item-has-children.active ul.sub-menu {
+    margin-top: 5px;
+    max-height: 9999px;
+}
+
+ul.mobile-menu ul.sub-menu li {
+    display: block;
+    font-size: 18px;
+    padding: 5px 0;
+    position: relative;
 }
 
 #header-search-toggle {

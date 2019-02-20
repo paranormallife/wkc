@@ -13,7 +13,7 @@
 	'link_before'     => '',
 	'link_after'      => '',
 	'items_wrap'      => /* Don't wrap in a UL */ '%3$s',
-	'depth'           => 1,
+	'depth'           => 2,
 	'walker'          => ''
 ); ?>
 
@@ -39,4 +39,10 @@
 		var element = document.getElementById("header-search-field");
 		element.classList.remove("active");
 	}
+
+// Child Menus Toggle
+  jQuery( '.menu-item-has-children' ).on( 'click', function() {
+		jQuery( this ).toggleClass( 'active' );
+  });
+
 </script>
