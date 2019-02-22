@@ -218,6 +218,10 @@ ul.mobile-menu ul.sub-menu li:first-of-type {
     outline: none;
 }
 
+.nav-menu .home a {
+    color: #E2B33E;
+}
+
 footer {
     background-color: #dcc58a;
     box-sizing: border-box;
@@ -547,11 +551,12 @@ ul.instagram-pics {
     header {
         align-items: center;
         display: grid;
-        grid-template-columns: 33.33% 33.33% 33.33%;
+        grid-template-columns: max-content auto;
         grid-template-rows: auto;
         grid-template-areas: 
-          "site-name logo tickets-link"
-          "nav nav nav";
+          "logo logo"
+          "nav tickets-link";
+        justify-content: stretch;
         margin: 20px auto;
         max-width: 1280px;
         padding: 0 10px;
@@ -564,6 +569,7 @@ ul.instagram-pics {
 
     .site-name {
         background-color: transparent;
+        display: none;
         margin: 0;
         width: auto;
     }
@@ -574,17 +580,9 @@ ul.instagram-pics {
         text-align: left;
     }
 
-    .tickets-link span {
-        display: block;
-        margin-right: 40px;
-        position: relative;
+    .tickets-link {
+        display: inline-block;
         text-align: right;
-        width: auto;
-        z-index: 1;
-    }
-
-    .tickets-link i {
-        display: none;
     }
 
     #navIcon {
@@ -599,13 +597,22 @@ ul.instagram-pics {
 
     #header-search-toggle {
         cursor: pointer;
+        display: inline-block;
+        margin-right: 40px;
     }
 
     #header-search-field {
-        margin-right: 40px;
+        margin-right: 80px;
         position: relative;
-        width: calc( 100% - 40px );
+        width: calc( 100% - 80px );
         z-index: 2;
+    }
+
+    #header-search-field #search {
+        float: right;
+        font-size: 18px;
+        margin: 0;
+        max-width: 300px;
     }
 
     .header-logo {
@@ -617,10 +624,10 @@ ul.instagram-pics {
         display: block;
         grid-area: nav;
         list-style-type: none;
-        margin: 0 auto;
+        margin: 0;
         max-height: 300px;
         overflow: visible;
-        text-align: center;
+        text-align: left;
     }
     
     ul.nav-menu li {
@@ -795,4 +802,10 @@ ul.instagram-pics {
         padding-top: 20%;
     }
 
+}
+
+@media screen and ( max-width: 1080px ) and ( min-width: 799px ) {
+    .nav-menu .home {
+        display: none;
+    }
 }

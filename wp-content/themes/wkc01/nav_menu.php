@@ -24,6 +24,11 @@
 </div>
 
 <ul id="navToggle" class="mobile-menu nav-menu">
+	<li class="home">
+		<a href="/" title="Home">
+			<?php echo bloginfo('name'); ?>
+		</a>
+	</li>
 	<?php wp_nav_menu( $navmenu ); ?>        
 </ul>
 
