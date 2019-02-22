@@ -219,7 +219,7 @@ ul.mobile-menu ul.sub-menu li:first-of-type {
 }
 
 footer {
-    background-color: #a49e40;
+    background-color: #dcc58a;
     box-sizing: border-box;
     color: white;
     display: table;
@@ -429,7 +429,7 @@ footer input:focus {
 
 #homepage_carousel .swiper-pagination-bullet-active {
     opacity: 1;
-    background: #a49e40;
+    background: #E2B33E;
 }
 
 #homepage_carousel .content {
@@ -466,7 +466,7 @@ a.url:before {
     width: 0;
     height: 0;
     border-top: 15px solid transparent;
-    border-left: 30px solid #a49e40;
+    border-left: 30px solid #E2B33E;
     border-bottom: 15px solid transparent;
 }
 
@@ -682,7 +682,7 @@ ul.instagram-pics {
     }
 
     .footer-wrapper {
-        background-color: #a49e40;
+        background-color: #dcc58a;
         display: table;
         width: 100%;
     }
