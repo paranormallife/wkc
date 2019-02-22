@@ -142,6 +142,46 @@ ul.mobile-menu li {
     display: block;
     font-size: 24px;
     padding: 5px 0;
+    position: relative;
+    text-transform: uppercase;
+}
+
+.menu-item-has-children:after {
+    color: rgba(0,0,0,0.25);
+    content: "\f107";
+    display: inline-block;
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+ul.sub-menu {
+    max-height: 1px;
+    overflow: hidden;
+}
+
+.menu-item-has-children.active:after {
+    color: black;
+    content: '\f106';
+}
+
+.menu-item-has-children.active ul.sub-menu {
+    margin-top: 5px;
+    max-height: 9999px;
+}
+
+ul.mobile-menu ul.sub-menu li {
+    display: block;
+    font-size: 18px;
+    padding: 5px 0;
+    position: relative;
+}
+
+ul.mobile-menu ul.sub-menu li:first-of-type {
+    border-top: 1px solid #EEE;
+    margin-top: 5px;
 }
 
 #header-search-toggle {
@@ -470,13 +510,16 @@ main {
 }
 
 ul.instagram-pics {
+    box-sizing: border-box;
     display: flex;
     flex-wrap: wrap;
     list-style-type: none;
+    justify-content: space-between;
+    padding: 0 4px;
 }
 
 .instagram-pics li {
-    flex-basis: 50%;
+    flex-basis: calc( 50% - 2px );
     height: 0;
     overflow: hidden;
     padding-top: 50%;
@@ -495,7 +538,7 @@ ul.instagram-pics {
 }
 
 .instagram-pics li:hover img {
-    transform: scale(1.1);
+    opacity: 0.9;
     transition: all 250ms linear 0s;
 }
 
@@ -509,7 +552,7 @@ ul.instagram-pics {
         grid-template-areas: 
           "site-name logo tickets-link"
           "nav nav nav";
-        margin: 10px auto;
+        margin: 20px auto;
         max-width: 1280px;
         padding: 0 10px;
         width: 100%;
@@ -576,6 +619,7 @@ ul.instagram-pics {
         list-style-type: none;
         margin: 0 auto;
         max-height: 300px;
+        overflow: visible;
         text-align: center;
     }
     
@@ -584,6 +628,38 @@ ul.instagram-pics {
         font-size: 18px;
         padding: 0 10px;
         text-transform: uppercase;
+    }
+
+    ul.sub-menu {
+        background-color: white;
+        left: 0;
+        position: absolute;
+        text-align: left;
+        white-space: nowrap;
+        z-index: 2;
+    }
+
+    ul.nav-menu ul.sub-menu li {
+        padding: 5px 10px;
+        text-transform: none;
+    }
+
+    ul.nav-menu ul.sub-menu li:last-of-type {
+        padding-bottom: 10px;
+    }
+
+    ul.sub-menu li a:hover {
+        color: black;
+    }
+
+    .menu-item-has-children a {
+        padding-right: 10px;
+    }
+    
+    .menu-item-has-children.active ul.sub-menu,
+    .menu-item-has-children:hover ul.sub-menu {
+        padding-top: 15px;
+        max-height: 9999px;
     }
 
     .site-name a,
@@ -705,7 +781,7 @@ ul.instagram-pics {
     main {
         margin: 0 auto;
         max-width: 1280px;
-        padding: 10px 10px 50px 10px;
+        padding: 30px 10px 50px 10px;
     }
 
     #home .post-content {
@@ -715,7 +791,7 @@ ul.instagram-pics {
     }
 
     .instagram-pics li {
-        flex-basis: 20%;
+        flex-basis: calc( 20% - 4px );
         padding-top: 20%;
     }
 
