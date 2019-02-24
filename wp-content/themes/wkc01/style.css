@@ -551,60 +551,83 @@ ul.instagram-pics {
     header {
         align-items: center;
         display: grid;
-        grid-template-columns: max-content auto;
+        grid-template-columns: 100%;
         grid-template-rows: auto;
-        grid-template-areas: 
-          "logo logo"
-          "nav tickets-link";
+        grid-template-areas:
+            "site-name"
+            "logo"
+            "nav";
         justify-content: stretch;
-        margin: 20px auto;
+        margin: 0 auto 20px auto;
         max-width: 1280px;
         padding: 0 10px;
+        position: relative;
+        text-align: center;
         width: 100%;
+    }
+
+    header i.fas {
+        color: white;
+    }
+
+    .site-name {
+        background-color: #1d5565;
+        grid-area: site-name;
+        margin: 0 0 0 -20px;
+        text-align: center;
+        width: calc( 100% + 40px );
+    }
+
+    .site-name a {
+        display: inline-block;
+    }
+
+    .site-name a:hover {
+        color: #E2B33E;
     }
 
     header a:hover {
         color: black;
     }
 
-    .site-name {
-        background-color: transparent;
-        display: none;
-        margin: 0;
-        width: auto;
-    }
-
-    .site-name a {
-        color: #1d5565;
-        padding: 0;
-        text-align: left;
-    }
-
     .tickets-link {
         display: inline-block;
-        text-align: right;
+        grid-area: site-name;
+        max-width: max-content;
+        text-align: left;
     }
 
     #navIcon {
         display: none;
     }
 
-    #header-search-toggle,
-    #header-search-field,
     .search-field-container {
-        grid-area: tickets-link;
+        grid-area: site-name;
+    }
+
+    #header-search-field.active #search {
+        color: white;
+        background-color: transparent;
+        display: block;
+    }
+
+    #header-search-toggle,
+    #header-search-field {
+        grid-area: site-name;
     }
 
     #header-search-toggle {
         cursor: pointer;
-        display: inline-block;
-        margin-right: 40px;
+        display: block;
+        max-width: 50px;
+        position: absolute;
+        right: 0;
     }
 
     #header-search-field {
-        margin-right: 80px;
+        margin-right: 40px;
         position: relative;
-        width: calc( 100% - 80px );
+        width: calc( 100% - 40px );
         z-index: 2;
     }
 
@@ -616,7 +639,7 @@ ul.instagram-pics {
     }
 
     .header-logo {
-        margin: 10px auto;
+        margin: 20px auto 10px auto;
         max-width: 200px;
     }
     
@@ -627,7 +650,7 @@ ul.instagram-pics {
         margin: 0;
         max-height: 300px;
         overflow: visible;
-        text-align: left;
+        text-align: center;
     }
     
     ul.nav-menu li {
@@ -689,14 +712,18 @@ ul.instagram-pics {
     }
 
     .footer-wrapper {
-        background-color: #dcc58a;
         display: table;
         width: 100%;
     }
 
+    footer,
+    .footer-wrapper {
+        background-color: #1d5565;
+    }
+
     footer a:hover,
     .footer-actions span:hover {
-        color: black;
+        color: #E2B33E;
     }
 
     .footer-contact {
