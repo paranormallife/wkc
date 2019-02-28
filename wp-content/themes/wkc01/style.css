@@ -30,7 +30,24 @@ a {
 }
 
 img {
+    display: block;
+    height: auto;
     max-width: 100%;
+}
+
+img.alignleft,
+img.alignright {
+    max-width: 50%;
+}
+
+img.alignleft {
+    float: left;
+    margin: 0.25em 10px 0 0;
+}
+
+img.alignright {
+    float: right;
+    margin: 0.25em 0 0 10px;
 }
 
 h1 {
@@ -47,6 +64,14 @@ h2 {
     margin: 0.5em auto;
     text-align: center;
     text-transform: uppercase;
+}
+
+h3 {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0.5em 0;
+    text-align: left;
 }
 
 header {
@@ -223,7 +248,7 @@ ul.mobile-menu ul.sub-menu li:first-of-type {
 }
 
 footer {
-    background-color: #dcc58a;
+    background-color: #1d5565;
     box-sizing: border-box;
     color: white;
     display: table;
@@ -482,7 +507,7 @@ a.url span {
 main {
     box-sizing: border-box;
     display: table;
-    padding: 0 25px 50px 25px;
+    margin: 0 auto;
     width: 100%;
 }
 
@@ -546,6 +571,32 @@ ul.instagram-pics {
     transition: all 250ms linear 0s;
 }
 
+.post-content article {
+    margin: 0 auto;
+    max-width: calc( 100% - 50px );
+}
+
+.post-content p {
+    display: table;
+    margin-bottom: 0.5em;
+    width: 100%;
+}
+
+.post-content blockquote {
+    border: 1px solid #E2B33E;
+    border-left: 0;
+    border-right: 0;
+    display: table;
+    margin: 10px auto;
+    padding: 10px 0 0 0;
+    width: 75%;
+}
+
+.post-content ul {
+    margin: 0 0 10px 10px;
+    padding: 0;
+}
+
 @media screen and ( min-width: 799px ) {
 
     body:before {
@@ -585,9 +636,9 @@ ul.instagram-pics {
     .site-name {
         background-color: transparent;
         grid-area: site-name;
-        margin: 0 0 0 -20px;
+        margin: 0;
         text-align: center;
-        width: calc( 100% + 40px );
+        width: 100%;
     }
 
     .site-name a {
@@ -826,8 +877,6 @@ ul.instagram-pics {
 
     main {
         margin: 0 auto;
-        max-width: 1280px;
-        padding: 30px 10px 50px 10px;
     }
 
     #home .post-content {
@@ -839,6 +888,31 @@ ul.instagram-pics {
     .instagram-pics li {
         flex-basis: calc( 20% - 4px );
         padding-top: 20%;
+    }
+
+    .post-content article {
+        max-width: 750px;
+    }
+
+    .post-content p,
+    .post-content blockquote,
+    .post-content ul {
+        margin: 0 auto 20px auto;
+    }
+
+    .post-featured-image {
+        align-items: center;
+        display: inline-flex;
+        height: 400px;
+        max-height: 400px;
+        overflow: hidden;
+        position: relative;
+        width: 100%;
+    }
+
+    .post-featured-image img {
+        position: absolute;
+        width: 100%;
     }
 
 }
