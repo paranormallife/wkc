@@ -71,7 +71,7 @@
 
 <header>
    <div class="site-name">
-      <a href="<?php echo get_bloginfo('wpurl'); ?>" title="Home" ?>
+      <a href="<?php echo get_bloginfo('wpurl'); ?>" title="Home">
          <?php echo get_bloginfo('name'); ?>
       </a>
    </div>

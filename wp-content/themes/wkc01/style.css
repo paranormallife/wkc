@@ -218,8 +218,12 @@ ul.mobile-menu ul.sub-menu li:first-of-type {
     outline: none;
 }
 
+.nav-menu .home a {
+    color: #E2B33E;
+}
+
 footer {
-    background-color: #a49e40;
+    background-color: #dcc58a;
     box-sizing: border-box;
     color: white;
     display: table;
@@ -429,7 +433,7 @@ footer input:focus {
 
 #homepage_carousel .swiper-pagination-bullet-active {
     opacity: 1;
-    background: #a49e40;
+    background: #E2B33E;
 }
 
 #homepage_carousel .content {
@@ -466,7 +470,7 @@ a.url:before {
     width: 0;
     height: 0;
     border-top: 15px solid transparent;
-    border-left: 30px solid #a49e40;
+    border-left: 30px solid #E2B33E;
     border-bottom: 15px solid transparent;
 }
 
@@ -547,58 +551,77 @@ ul.instagram-pics {
     header {
         align-items: center;
         display: grid;
-        grid-template-columns: 33.33% 33.33% 33.33%;
+        grid-template-columns: 100%;
         grid-template-rows: auto;
-        grid-template-areas: 
-          "site-name logo tickets-link"
-          "nav nav nav";
-        margin: 20px auto;
+        grid-template-areas:
+            "site-name"
+            "logo"
+            "nav";
+        justify-content: stretch;
+        margin: 0 auto 20px auto;
         max-width: 1280px;
         padding: 0 10px;
+        position: relative;
+        text-align: center;
         width: 100%;
+    }
+
+    header i.fas {
+        color: white;
+    }
+
+    .site-name {
+        background-color: #1d5565;
+        grid-area: site-name;
+        margin: 0 0 0 -20px;
+        text-align: center;
+        width: calc( 100% + 40px );
+    }
+
+    .site-name a {
+        display: inline-block;
+    }
+
+    .site-name a:hover {
+        color: #E2B33E;
     }
 
     header a:hover {
         color: black;
     }
 
-    .site-name {
-        background-color: transparent;
-        margin: 0;
-        width: auto;
-    }
-
-    .site-name a {
-        color: #1d5565;
-        padding: 0;
+    .tickets-link {
+        display: inline-block;
+        grid-area: site-name;
+        max-width: max-content;
         text-align: left;
-    }
-
-    .tickets-link span {
-        display: block;
-        margin-right: 40px;
-        position: relative;
-        text-align: right;
-        width: auto;
-        z-index: 1;
-    }
-
-    .tickets-link i {
-        display: none;
     }
 
     #navIcon {
         display: none;
     }
 
-    #header-search-toggle,
-    #header-search-field,
     .search-field-container {
-        grid-area: tickets-link;
+        grid-area: site-name;
+    }
+
+    #header-search-field.active #search {
+        color: white;
+        background-color: transparent;
+        display: block;
+    }
+
+    #header-search-toggle,
+    #header-search-field {
+        grid-area: site-name;
     }
 
     #header-search-toggle {
         cursor: pointer;
+        display: block;
+        max-width: 50px;
+        position: absolute;
+        right: 0;
     }
 
     #header-search-field {
@@ -608,8 +631,15 @@ ul.instagram-pics {
         z-index: 2;
     }
 
+    #header-search-field #search {
+        float: right;
+        font-size: 18px;
+        margin: 0;
+        max-width: 300px;
+    }
+
     .header-logo {
-        margin: 10px auto;
+        margin: 20px auto 10px auto;
         max-width: 200px;
     }
     
@@ -617,7 +647,7 @@ ul.instagram-pics {
         display: block;
         grid-area: nav;
         list-style-type: none;
-        margin: 0 auto;
+        margin: 0;
         max-height: 300px;
         overflow: visible;
         text-align: center;
@@ -682,14 +712,18 @@ ul.instagram-pics {
     }
 
     .footer-wrapper {
-        background-color: #a49e40;
         display: table;
         width: 100%;
     }
 
+    footer,
+    .footer-wrapper {
+        background-color: #1d5565;
+    }
+
     footer a:hover,
     .footer-actions span:hover {
-        color: black;
+        color: #E2B33E;
     }
 
     .footer-contact {
@@ -795,4 +829,10 @@ ul.instagram-pics {
         padding-top: 20%;
     }
 
+}
+
+@media screen and ( max-width: 1080px ) and ( min-width: 799px ) {
+    .nav-menu .home {
+        display: none;
+    }
 }
