@@ -548,6 +548,18 @@ ul.instagram-pics {
 
 @media screen and ( min-width: 799px ) {
 
+    body:before {
+        /* Full width top bar: */
+        background-color: #1d5565;
+        content: ' ';
+        height: 2.5em;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
+        z-index: 0;
+    }
+
     header {
         align-items: center;
         display: grid;
@@ -571,7 +583,7 @@ ul.instagram-pics {
     }
 
     .site-name {
-        background-color: #1d5565;
+        background-color: transparent;
         grid-area: site-name;
         margin: 0 0 0 -20px;
         text-align: center;
