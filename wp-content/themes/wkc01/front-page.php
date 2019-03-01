@@ -19,6 +19,18 @@
     </div>
 </main>
 
+<section class="eventbrite-home">
+    
+    <?php
+    $the_events = new Eventbrite_Query( array( 'display_private' => true, 'limit' => 5, 'status' => 'all' ) );
+    while ( $the_events->have_posts() ) : $the_events->the_post(); ?>
+
+        <?php echo $post_title; ?>
+
+    <?php endwhile; wp_reset_postdata(); ?>
+
+</section>
+
 <?php if (is_front_page()) { dynamic_sidebar( 'home_instagram' ); } ?>
 
 <?php get_footer(); ?>
