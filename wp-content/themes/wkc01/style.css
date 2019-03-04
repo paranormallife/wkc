@@ -513,11 +513,12 @@ main {
 
 .button {
     box-sizing: border-box;
-    display: inline-block;
+    display: table;
     font-weight: bold;
-    margin: 10px 0;
+    margin: 10px auto;
     padding: 5px 10px;
     text-transform: uppercase;
+    width: auto;
 }
 
 .button.bordered {
@@ -536,6 +537,11 @@ main {
 .button:hover span:after {
     margin-left: 10px;
     transition: all 250ms linear 0s;
+}
+
+.button.filled {
+    background: #1d5565;
+    color: white;
 }
 
 ul.instagram-pics {
@@ -595,6 +601,96 @@ ul.instagram-pics {
 .post-content ul {
     margin: 0 0 10px 10px;
     padding: 0;
+}
+
+/* EVENTBRITE EVENTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+section.eventbrite-home {
+    background-color: #EEE;
+    padding: 25px;
+}
+
+.wkc .row_grid {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.wkc .iee_archive .iee_event .event_date {
+    background-color: transparent;
+    color: black;
+    display: flex;
+    float: none;
+    height: auto;
+    padding: 0;
+    text-align: left;
+    width: 75px;
+}
+
+.wkc .iee_archive .iee_event .event_date .month {
+    display: block;
+    font-size: 16px;
+    text-align: left;
+    line-height: normal;
+    order: 2;
+    font-weight: bold;
+}
+
+.wkc .iee_archive .iee_event .event_date .date {
+    display: block;
+    text-align: left;
+    font-size: 32px;
+    line-height: 30px;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.wkc .iee_archive .iee_event .event_details {
+    background-color: transparent;
+    display: flex;
+    height: auto;
+    align-items: center;
+    justify-content: stretch;
+    padding: 10px 0;
+}
+
+.wkc .iee_archive .iee_event .event_desc .event_title {
+    font-size: 16px;
+    color: black;
+    font-weight: bold;
+}
+
+.wkc .iee_archive .iee_event .event_desc .event_address,
+.wkc .iee_archive .iee_event .event_desc .event_title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.wkc .event_address {
+    font-size: 14px;
+}
+
+.wkc .iee_archive .iee_event .event_desc {
+    border-left: 1px solid black;
+    float: none;
+    margin: 0 0 0 10px;
+    padding: 0 0 0 10px;
+    width: calc( 100% - 85px );
+}
+
+.wkc .archive-event {
+    position: relative;
+    min-height: 1px;
+    padding-left: 0;
+    padding-right: 0;
+    margin-bottom: 20px;
+}
+
+
+.wkc .iee_archive .archive-event .iee_event {
+    height: auto;
+    font-size: 16px;
 }
 
 @media screen and ( min-width: 799px ) {
@@ -885,6 +981,10 @@ ul.instagram-pics {
         text-align: center;
     }
 
+    #home h2 {
+        margin: 2em 0;
+    }
+
     .instagram-pics li {
         flex-basis: calc( 20% - 4px );
         padding-top: 20%;
@@ -915,10 +1015,90 @@ ul.instagram-pics {
         width: 100%;
     }
 
+    .wkc .archive-event {
+        float: left;
+        width: calc( 50% - 5px );
+    }
+
+    .wkc .archive-event:nth-of-type(even) {
+        margin-left: 10px;
+    }
+
+    .wkc .archive-event:nth-of-type(5) {
+        display: none;
+    }
+
+    .wkc .iee_archive .iee_event .img_placeholder {
+        background-position: center center;
+        min-height: 200px;
+    }
+
 }
 
 @media screen and ( max-width: 1080px ) and ( min-width: 799px ) {
     .nav-menu .home {
         display: none;
+    }
+}
+
+
+
+@media (min-width: 992px) {
+    .wkc .archive-event,
+    .wkc .col-iee-md-4 {
+        float: left;
+        width: calc( 20% - 10px );
+    }
+
+    .wkc .archive-event {
+        margin-left: 10px;
+    }
+
+    .wkc .archive-event:first-of-type{
+        margin-left: 0;
+    }
+
+    .wkc .archive-event:nth-of-type(5) {
+        display: block;
+    }
+    
+    .wkc .iee_archive .iee_event .event_details {
+        display: block;
+    }
+
+    .wkc .iee_archive .iee_event .event_date {
+        align-items: center;
+        box-sizing: border-box;
+        background-color: rgba(0,0,0,0.5);
+        color: white;
+        height: 100px;
+        padding: 10px;
+        position: absolute;
+        right: 0;
+        top: 100px;
+        transition: all 250ms linear 0s;
+        width: 100px;
+    }
+
+    .wkc .iee_archive .iee_event:hover .event_date {
+        background-color: white;
+        color: black;
+        transition: all 250ms linear 0s;
+    }
+
+    .wkc .iee_archive .iee_event .event_desc {
+        border: 0;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+
+    .wkc .iee_archive .iee_event .event_desc .event_title {
+        min-height: 5em;
+        white-space: normal;
+    }
+
+    .wkc .iee_archive .iee_event .event_desc .event_address {
+        margin-top: 10px;
     }
 }

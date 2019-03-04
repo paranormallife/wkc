@@ -67,7 +67,7 @@
 <?php /* This should always be included just before the </head> tag. */ wp_head(); ?>
 </head>
 
-<body id="<?php echo $post->post_name; ?>" class="<?php echo get_post_type(); ?>">
+<body id="<?php echo $post->post_name; ?>" class="wkc <?php echo get_post_type(); ?>">
 
 <header>
    <div class="site-name">

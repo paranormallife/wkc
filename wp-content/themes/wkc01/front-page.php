@@ -20,15 +20,9 @@
 </main>
 
 <section class="eventbrite-home">
-    
-    <?php
-    $the_events = new Eventbrite_Query( array( 'display_private' => true, 'limit' => 5, 'status' => 'all' ) );
-    while ( $the_events->have_posts() ) : $the_events->the_post(); ?>
-
-        <?php echo $post_title; ?>
-
-    <?php endwhile; wp_reset_postdata(); ?>
-
+    <h2>Upcoming Events</h2>
+    <?php echo do_shortcode('[eventbrite_events posts_per_page="5"]'); ?>
+    <a href="/events" class="button filled"><span>View Full Calendar</span></a>
 </section>
 
 <?php if (is_front_page()) { dynamic_sidebar( 'home_instagram' ); } ?>
