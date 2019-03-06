@@ -160,5 +160,55 @@ function asw_widgets_init() {
 }
 add_action( 'widgets_init', 'asw_widgets_init' );
 
+function mytheme_setup() {
+    // Add support for Block Styles
+	add_theme_support( 'wp-block-styles' );
+	// Add Color Palettes
+	add_theme_support( 'editor-color-palette', array(
+		array(
+			'name' => __( 'Black', 'wkc01' ),
+			'slug' => 'black',
+			'color' => '#000',
+		),
+		array(
+			'name' => __( 'White', 'wkc01' ),
+			'slug' => 'white',
+			'color' => '#FFF',
+		),
+		array(
+			'name' => __( 'WKC Blue', 'wkc01' ),
+			'slug' => 'wkc_blue',
+			'color' => '#1d5565',
+		),
+		array(
+			'name' => __( 'WKC Gold', 'wkc01' ),
+			'slug' => 'wkc_gold',
+			'color' => '#E2B33E',
+		),
+	) );
+	add_theme_support( 'disable-custom-colors' );
+	add_theme_support('disable-custom-font-sizes');
+}
+add_action( 'after_setup_theme', 'mytheme_setup' );
+
+add_action('acf/init', 'my_register_blocks');
+function my_register_blocks() {
+
+    // check function exists
+    if( function_exists('acf_register_block') ) {
+
+        // register a testimonial block
+        acf_register_block(array(
+            'name'              => 'testimonial',
+            'title'             => __('Testimonial'),
+            'description'       => __('A custom testimonial block.'),
+            'render_template'   => 'snippets/team-member.php',
+            'category'          => 'formatting',
+            'icon'              => 'admin-comments',
+            'mode'              => 'preview',
+            'keywords'          => array( 'testimonial', 'quote' ),
+        ));
+    }
+}
 
 ?>

@@ -29,6 +29,10 @@ a {
     text-decoration: none;
 }
 
+a:hover {
+    color: #E2B33E;
+}
+
 img {
     display: block;
     height: auto;
@@ -53,7 +57,7 @@ img.alignright {
 h1 {
     display: block;
     font: bold 32px 'Steagal Rough','Prompt', sans-serif; 
-    margin: 0.5em 0;
+    margin: 1em 0;
     text-align: center;
     text-transform: uppercase;
 }
@@ -579,7 +583,7 @@ ul.instagram-pics {
 
 .post-content article {
     margin: 0 auto;
-    max-width: calc( 100% - 50px );
+    max-width: calc( 100vw - 50px );
 }
 
 .post-content p {
@@ -601,6 +605,40 @@ ul.instagram-pics {
 .post-content ul {
     margin: 0 0 10px 10px;
     padding: 0;
+}
+
+/* Editor Styles ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+.has-wkc_blue-background-color {
+    background-color: #1d5565;
+}
+
+.has-wkc_blue-color {
+    color: #1d5565;
+}
+
+.has-wkc_gold-background-color {
+    background-color: #E2B33E;
+}
+
+.has-wkc_gold-color {
+    color: #E2B33E;
+}
+
+.has-black-background-color {
+    background-color: black;
+}
+
+.has-black-color {
+    color: black;
+}
+
+.has-white-background-color {
+    background-color: white;
+}
+
+.has-white-color {
+    color: white;
 }
 
 /* EVENTBRITE EVENTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -691,6 +729,34 @@ section.eventbrite-home {
 .wkc .iee_archive .archive-event .iee_event {
     height: auto;
     font-size: 16px;
+}
+
+.wkc .iee_event_meta .iee_organizermain {
+    background-color: transparent;
+    border: 0;
+    padding: 0;
+}
+
+.wkc .iee_event_meta .titlemain {
+    font-size: 18px;
+    font-weight: bold;
+    color: #444444;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.wkc .iee_event_meta .details,
+.wkc .iee_event_meta .organizer,
+.wkc .iee_event_meta .venue,
+.wkc .iee_event_meta .map {
+    margin-bottom: 20px;
+}
+
+.wkc .eventbrite-ticket-section {
+    border: 2px solid black;
+    border-left: 0;
+    border-right: 0;
+    margin-bottom: 20px;
 }
 
 @media screen and ( min-width: 799px ) {
@@ -994,6 +1060,12 @@ section.eventbrite-home {
         max-width: 750px;
     }
 
+    #calendar .post-content article {
+        box-sizing: border-box;
+        max-width: 1280px;
+        padding: 0 10px;
+    }
+
     .post-content p,
     .post-content blockquote,
     .post-content ul {
@@ -1031,6 +1103,27 @@ section.eventbrite-home {
     .wkc .iee_archive .iee_event .img_placeholder {
         background-position: center center;
         min-height: 200px;
+    }
+
+    .wkc .iee_event_meta .details {
+        float: left;
+        margin-right: 20px;
+        width: calc( 50% - 10px );
+    }
+
+    .wkc .iee_event_meta .organizer {
+        float: right;
+        width: calc( 50% - 10px );
+    }
+
+    .wkc .iee_event_meta .venue {
+        box-sizing: border-box;
+        padding-right: 10px;
+    }
+
+    #calendar.wkc .iee_archive .iee_event .img_placeholder {
+        background-position: center center;
+        min-height: 300px;
     }
 
 }
@@ -1100,5 +1193,18 @@ section.eventbrite-home {
 
     .wkc .iee_archive .iee_event .event_desc .event_address {
         margin-top: 10px;
+    }
+
+    #calendar.wkc .archive-event, #calendar.wkc .col-iee-md-4 {
+        float: left;
+        width: calc( 50% - 10px );
+    }
+
+    #calendar.wkc .iee_archive .iee_event .event_date {
+        top: 200px;
+    }
+
+    #calendar.wkc .iee_archive .iee_event .event_desc .event_title {
+        min-height: 0;
     }
 }
