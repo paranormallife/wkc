@@ -582,8 +582,12 @@ ul.instagram-pics {
 }
 
 .post-content article {
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;
     margin: 0 auto;
     max-width: calc( 100vw - 50px );
+    text-align: justify;
 }
 
 .post-content p {
@@ -605,6 +609,22 @@ ul.instagram-pics {
 .post-content ul {
     margin: 0 0 10px 10px;
     padding: 0;
+}
+
+.team-member {
+    display: block;
+    margin-bottom: 40px;
+    margin-top: 40px;
+}
+
+.team-member h3 {
+    display: block;
+    text-align: center;
+}
+
+.team-member img {
+    height: auto;
+    width: 100%;
 }
 
 /* Editor Styles ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -1124,6 +1144,12 @@ section.eventbrite-home {
     #calendar.wkc .iee_archive .iee_event .img_placeholder {
         background-position: center center;
         min-height: 300px;
+    }
+
+    .team-member {
+        float: left;
+        width: calc( 50% - 100px );
+        margin: 40px 50px;
     }
 
 }
