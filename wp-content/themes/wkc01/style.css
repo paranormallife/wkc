@@ -78,6 +78,13 @@ h3 {
     text-align: left;
 }
 
+h1,
+h2,
+h3 {
+    clear: both;
+    float: none;
+}
+
 header {
     display: grid;
     box-sizing: border-box;

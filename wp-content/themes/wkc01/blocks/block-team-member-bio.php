@@ -11,5 +11,6 @@
     <?php } else { ?>
         <h3><?php echo $name; ?></h3>
     <?php } ?>
+    <h4><?php block_field('bio-role'); ?></h4>
     <div class="bio-blurb"><?php block_field('bio-blurb'); ?></div>
 </div>
