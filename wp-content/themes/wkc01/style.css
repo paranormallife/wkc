@@ -1175,6 +1175,10 @@ section.eventbrite-home {
         margin: 40px 50px;
     }
 
+    .columned {
+        column-count: 2;
+    }
+
 }
 
 @media screen and ( max-width: 1080px ) and ( min-width: 799px ) {
