@@ -592,7 +592,7 @@ ul.instagram-pics {
     -webkit-hyphens: auto;
     -ms-hyphens: auto;
     hyphens: auto;
-    margin: 0 auto;
+    margin: 0 auto 100px auto;
     max-width: calc( 100vw - 50px );
     text-align: justify;
 }
@@ -792,6 +792,14 @@ section.eventbrite-home {
     border-left: 0;
     border-right: 0;
     margin-bottom: 20px;
+}
+
+.wp-block-separator {
+    border: 0;
+    display: table;
+    float: none;
+    margin: 50px 0;
+    width: 100%;
 }
 
 @media screen and ( min-width: 799px ) {
