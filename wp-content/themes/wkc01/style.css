@@ -65,7 +65,7 @@ h1 {
 h2 {
     display: block;
     font-size: 24px;
-    margin: 0.5em auto;
+    margin: 1em auto;
     text-align: center;
     text-transform: uppercase;
 }
@@ -204,7 +204,6 @@ ul.sub-menu {
 }
 
 .menu-item-has-children.active ul.sub-menu {
-    margin-top: 5px;
     max-height: 9999px;
 }
 
@@ -217,7 +216,7 @@ ul.mobile-menu ul.sub-menu li {
 
 ul.mobile-menu ul.sub-menu li:first-of-type {
     border-top: 1px solid #EEE;
-    margin-top: 5px;
+    margin-top: 15px;
 }
 
 #header-search-toggle {
@@ -592,9 +591,13 @@ ul.instagram-pics {
     -webkit-hyphens: auto;
     -ms-hyphens: auto;
     hyphens: auto;
-    margin: 0 auto 100px auto;
+    margin: 100px auto;
     max-width: calc( 100vw - 50px );
     text-align: justify;
+}
+
+.post-content article h1 {
+    margin-bottom: 2em;
 }
 
 .post-content p {
@@ -680,7 +683,7 @@ ul.instagram-pics {
 
 section.eventbrite-home {
     background-color: #EEE;
-    padding: 25px;
+    padding: 25px 25px 50px 25px;
 }
 
 .wkc .row_grid {
@@ -826,7 +829,7 @@ section.eventbrite-home {
             "logo"
             "nav";
         justify-content: stretch;
-        margin: 0 auto 20px auto;
+        margin: 0 auto 30px auto;
         max-width: 1280px;
         padding: 0 10px;
         position: relative;
@@ -907,7 +910,7 @@ section.eventbrite-home {
     }
 
     .header-logo {
-        margin: 20px auto 10px auto;
+        margin: 40px auto;
         max-width: 200px;
     }
     
@@ -1091,7 +1094,7 @@ section.eventbrite-home {
     }
 
     #home h2 {
-        margin: 2em 0;
+        margin: 3em 0;
     }
 
     .instagram-pics li {

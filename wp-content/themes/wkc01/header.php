@@ -76,7 +76,7 @@
       </a>
    </div>
    <div class="tickets-link">
-      <a href="#"><i class="fas fa-ticket-alt"></i><span>Buy Tickets</span></a>
+      <a href="/calendar"><i class="fas fa-ticket-alt"></i><span>Buy Tickets</span></a>
    </div>
    <?php get_template_part('snippets/header_logo'); ?>
    <div class="search-field-container"></div>
