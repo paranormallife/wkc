@@ -291,6 +291,7 @@ footer h2 {
     font-weight: bold;
     margin-bottom: 0.5em;
     padding-bottom: 0.5em;
+    text-align: left;
 }
 
 .footer-contact {
@@ -313,7 +314,8 @@ footer h2 {
     text-transform: uppercase;
 }
 
-footer form {
+footer .footer-search form,
+footer .signup-form {
     display: inline-flex;
     justify-content: stretch;
     margin-bottom: 10px;
@@ -338,10 +340,21 @@ footer input[type=email] {
 footer input[type=submit] {
     background-color: black;
     color: white;
+    cursor: pointer;
 }
 
 footer input:focus {
     outline: none;
+}
+
+#mc_embed_signup .signup-form div.mce_inline_error {
+    background-color: transparent;
+    color: #E2B33E;
+    font-weight: normal;
+    margin: 40px 0 0 0;
+    padding: 0;
+    position: absolute;
+    z-index: 1;
 }
 
 .footer-search,
@@ -591,7 +604,7 @@ ul.instagram-pics {
     -webkit-hyphens: auto;
     -ms-hyphens: auto;
     hyphens: auto;
-    margin: 100px auto;
+    margin: 70px auto;
     max-width: calc( 100vw - 50px );
     text-align: justify;
 }
@@ -807,27 +820,15 @@ section.eventbrite-home {
 
 @media screen and ( min-width: 799px ) {
 
-    body:before {
-        /* Full width top bar: */
-        background-color: #1d5565;
-        content: ' ';
-        height: 2.5em;
-        left: 0;
-        position: absolute;
-        top: 0;
-        width: 100%;
-        z-index: 0;
-    }
-
     header {
         align-items: center;
         display: grid;
-        grid-template-columns: 100%;
+        grid-template-columns: min-content auto min-content;
         grid-template-rows: auto;
         grid-template-areas:
-            "site-name"
-            "logo"
-            "nav";
+            "logo logo logo"
+            "search nav tickets-link"
+            "search-field search-field search-field";
         justify-content: stretch;
         margin: 0 auto 30px auto;
         max-width: 1280px;
@@ -838,32 +839,17 @@ section.eventbrite-home {
     }
 
     header i.fas {
-        color: white;
+        color: #1d5565;
     }
 
-    .site-name {
-        background-color: transparent;
-        grid-area: site-name;
-        margin: 0;
-        text-align: center;
-        width: 100%;
-    }
-
-    .site-name a {
-        display: inline-block;
-    }
-
-    .site-name a:hover {
-        color: #E2B33E;
-    }
-
+    
     header a:hover {
         color: black;
     }
 
     .tickets-link {
         display: inline-block;
-        grid-area: site-name;
+        grid-area: tickets-link;
         max-width: max-content;
         text-align: left;
     }
@@ -873,45 +859,50 @@ section.eventbrite-home {
     }
 
     .search-field-container {
-        grid-area: site-name;
+        grid-area: search;
     }
 
     #header-search-field.active #search {
-        color: white;
+        color: #1d5565;
         background-color: transparent;
         display: block;
     }
 
-    #header-search-toggle,
+    #header-search-toggle {
+        grid-area: search;
+    }
+
     #header-search-field {
-        grid-area: site-name;
+        grid-area: search-field;
     }
 
     #header-search-toggle {
         cursor: pointer;
         display: block;
         max-width: 50px;
-        position: absolute;
-        right: 0;
     }
 
     #header-search-field {
-        margin-right: 40px;
-        position: relative;
-        width: calc( 100% - 40px );
+        background-color: white;
+        bottom: 35px;
+        left: 0;
+        max-width: 250px;
+        position: absolute;
+        width: 100%;
         z-index: 2;
     }
 
     #header-search-field #search {
-        float: right;
+        border: 2px solid #1d5565;
         font-size: 18px;
         margin: 0;
-        max-width: 300px;
+        padding: 10px;
+        text-align: center;
     }
 
     .header-logo {
         margin: 40px auto;
-        max-width: 200px;
+        max-width: 250px;
     }
     
     ul.nav-menu {
@@ -971,15 +962,15 @@ section.eventbrite-home {
 
     footer {
         display: grid;
-        grid-template-columns: calc( 33.33% - 10px)  calc( 33.33% - 10px)  calc( 33.33% - 10px);
+        grid-template-columns: calc( 33.33% - 20px)  calc( 33.33% - 20px)  calc( 33.33% - 20px);
         grid-template-rows: auto;
         grid-template-areas:
-        "contact actions nysca"
+        "contact nysca actions"
         "copyright copyright copyright";
         justify-content: space-between;
         margin: 0 auto;
         max-width: 1280px;
-        padding: 20px 10px;
+        padding: 20px 20px;
     }
 
     .footer-wrapper {
