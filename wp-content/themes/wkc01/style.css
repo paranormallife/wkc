@@ -650,6 +650,7 @@ ul.instagram-pics {
     color: #666;
     font-weight: normal;
     font-style: italic;
+    margin: 1rem auto;
     text-align: center;
 }
 
@@ -1165,8 +1166,16 @@ section.eventbrite-home {
 
     .team-member {
         float: left;
-        width: calc( 50% - 100px );
-        margin: 40px 50px;
+        width: calc( 33.33% - 50px );
+        margin: 40px 25px;
+    }
+
+    .team-member:nth-of-type(3n+3) {
+        clear: right;
+    }
+
+    .team-member:nth-of-type(3n+4) {
+        clear: left;
     }
 
     .columned {

@@ -3,6 +3,8 @@
         $email = block_value('bio-email');
         $name = block_value('bio-name');
         $image = block_value('bio-image');
+        $role = block_value('bio-role');
+        $blurb = block_value('bio-blurb');
     ?>
     <?php if( $image != '' ) { ?>
         <div class="bio-image">
@@ -14,6 +16,10 @@
     <?php } else { ?>
         <h3><?php echo $name; ?></h3>
     <?php } ?>
-    <h4><?php block_field('bio-role'); ?></h4>
-    <div class="bio-blurb"><?php block_field('bio-blurb'); ?></div>
+    <?php if( $role != '' ) { ?>
+        <h4><?php block_field('bio-role'); ?></h4>
+    <?php } ?>
+    <?php if( $blurb != '' ) { ?>
+        <div class="bio-blurb"><?php block_field('bio-blurb'); ?></div>
+    <?php } ?>
 </div>
