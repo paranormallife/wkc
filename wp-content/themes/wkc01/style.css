@@ -626,7 +626,7 @@ ul.instagram-pics {
 }
 
 .post-content ul {
-    margin: 0 0 10px 10px;
+    margin: 0 0 10px 1rem;
     padding: 0;
 }
 
@@ -1105,9 +1105,16 @@ section.eventbrite-home {
     }
 
     .post-content p,
-    .post-content blockquote,
-    .post-content ul {
+    .post-content blockquote {
         margin: 0 auto 20px auto;
+    }
+
+    .post-content ul:not(.wp-block-gallery) {
+        margin: 2rem 0 2rem 1rem;
+    }
+
+    .post-content ul:not(.wp-block-gallery) li {
+        margin-bottom: 1rem;
     }
 
     .post-featured-image {
