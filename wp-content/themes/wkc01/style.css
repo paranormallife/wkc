@@ -819,15 +819,10 @@ section.eventbrite-home {
     width: 100%;
 }
 
-.contact-form input,
-.contact-form textarea {
-    -webkit-appearance: none;
-    appearance: none;
-}
-
 .contact-form select,
 .contact-form input,
 .contact-form textarea {
+    box-sizing:border-box;
     border: 1px solid #EBEBEB;
     border-radius: 0;
     box-shadow: none;
@@ -835,6 +830,22 @@ section.eventbrite-home {
     margin: 0.5em 0;
     padding: 0.5em;
     width: 100%;
+}
+
+.contact-form select:focus,
+.contact-form input:focus,
+.contact-form textarea:focus {
+    outline: none;
+    border: 1px solid #E2B33E;
+}
+
+.contact-form .two-col {
+    display: flex;
+    justify-content : space-between;
+}
+
+.contact-form .two-col input {
+    flex-basis: 45%;
 }
 
 @media screen and ( min-width: 799px ) {
