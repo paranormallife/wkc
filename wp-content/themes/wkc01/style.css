@@ -29,6 +29,10 @@ a {
     text-decoration: none;
 }
 
+a:hover {
+    color: #E2B33E;
+}
+
 img {
     display: block;
     height: auto;
@@ -53,7 +57,7 @@ img.alignright {
 h1 {
     display: block;
     font: bold 32px 'Steagal Rough','Prompt', sans-serif; 
-    margin: 0.5em 0;
+    margin: 1em 0;
     text-align: center;
     text-transform: uppercase;
 }
@@ -61,7 +65,7 @@ h1 {
 h2 {
     display: block;
     font-size: 24px;
-    margin: 0.5em auto;
+    margin: 1em auto;
     text-align: center;
     text-transform: uppercase;
 }
@@ -72,6 +76,13 @@ h3 {
     font-weight: bold;
     margin: 0.5em 0;
     text-align: left;
+}
+
+h1,
+h2,
+h3 {
+    clear: both;
+    float: none;
 }
 
 header {
@@ -193,7 +204,6 @@ ul.sub-menu {
 }
 
 .menu-item-has-children.active ul.sub-menu {
-    margin-top: 5px;
     max-height: 9999px;
 }
 
@@ -206,7 +216,7 @@ ul.mobile-menu ul.sub-menu li {
 
 ul.mobile-menu ul.sub-menu li:first-of-type {
     border-top: 1px solid #EEE;
-    margin-top: 5px;
+    margin-top: 15px;
 }
 
 #header-search-toggle {
@@ -281,6 +291,7 @@ footer h2 {
     font-weight: bold;
     margin-bottom: 0.5em;
     padding-bottom: 0.5em;
+    text-align: left;
 }
 
 .footer-contact {
@@ -303,7 +314,8 @@ footer h2 {
     text-transform: uppercase;
 }
 
-footer form {
+footer .footer-search form,
+footer .signup-form {
     display: inline-flex;
     justify-content: stretch;
     margin-bottom: 10px;
@@ -328,10 +340,21 @@ footer input[type=email] {
 footer input[type=submit] {
     background-color: black;
     color: white;
+    cursor: pointer;
 }
 
 footer input:focus {
     outline: none;
+}
+
+#mc_embed_signup .signup-form div.mce_inline_error {
+    background-color: transparent;
+    color: #E2B33E;
+    font-weight: normal;
+    margin: 40px 0 0 0;
+    padding: 0;
+    position: absolute;
+    z-index: 1;
 }
 
 .footer-search,
@@ -513,11 +536,12 @@ main {
 
 .button {
     box-sizing: border-box;
-    display: inline-block;
+    display: table;
     font-weight: bold;
-    margin: 10px 0;
+    margin: 10px auto;
     padding: 5px 10px;
     text-transform: uppercase;
+    width: auto;
 }
 
 .button.bordered {
@@ -536,6 +560,11 @@ main {
 .button:hover span:after {
     margin-left: 10px;
     transition: all 250ms linear 0s;
+}
+
+.button.filled {
+    background: #1d5565;
+    color: white;
 }
 
 ul.instagram-pics {
@@ -572,8 +601,12 @@ ul.instagram-pics {
 }
 
 .post-content article {
-    margin: 0 auto;
-    max-width: calc( 100% - 50px );
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;
+    margin: 50px auto;
+    max-width: calc( 100vw - 50px );
+    text-align: justify;
 }
 
 .post-content p {
@@ -593,35 +626,212 @@ ul.instagram-pics {
 }
 
 .post-content ul {
-    margin: 0 0 10px 10px;
+    margin: 0 0 10px 1rem;
     padding: 0;
+}
+
+.search-results h2 {
+    text-align: left;
+}
+
+.team-member {
+    display: block;
+    margin-bottom: 40px;
+    margin-top: 40px;
+}
+
+.team-member h3 {
+    display: block;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.team-member h4 {
+    color: #666;
+    font-weight: normal;
+    font-style: italic;
+    margin: 1rem auto;
+    text-align: center;
+}
+
+.team-member img {
+    height: auto;
+    width: 100%;
+}
+
+/* Editor Styles ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+.has-wkc_blue-background-color {
+    background-color: #1d5565;
+}
+
+.has-wkc_blue-color {
+    color: #1d5565;
+}
+
+.has-wkc_gold-background-color {
+    background-color: #E2B33E;
+}
+
+.has-wkc_gold-color {
+    color: #E2B33E;
+}
+
+.has-black-background-color {
+    background-color: black;
+}
+
+.has-black-color {
+    color: black;
+}
+
+.has-white-background-color {
+    background-color: white;
+}
+
+.has-white-color {
+    color: white;
+}
+
+/* EVENTBRITE EVENTS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+section.eventbrite-home {
+    background-color: #EEE;
+    padding: 25px 25px 50px 25px;
+}
+
+.wkc .row_grid {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.wkc .iee_archive .iee_event .event_date {
+    background-color: transparent;
+    color: black;
+    display: flex;
+    float: none;
+    height: auto;
+    padding: 0;
+    text-align: left;
+    width: 75px;
+}
+
+.wkc .iee_archive .iee_event .event_date .month {
+    display: block;
+    font-size: 16px;
+    text-align: left;
+    line-height: normal;
+    order: 2;
+    font-weight: bold;
+}
+
+.wkc .iee_archive .iee_event .event_date .date {
+    display: block;
+    text-align: left;
+    font-size: 32px;
+    line-height: 30px;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.wkc .iee_archive .iee_event .event_details {
+    background-color: transparent;
+    display: flex;
+    height: auto;
+    align-items: center;
+    justify-content: stretch;
+    padding: 10px 0;
+}
+
+.wkc .iee_archive .iee_event .event_desc .event_title {
+    font-size: 16px;
+    color: black;
+    font-weight: bold;
+}
+
+.wkc .iee_archive .iee_event .event_desc .event_address,
+.wkc .iee_archive .iee_event .event_desc .event_title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.wkc .event_address {
+    font-size: 14px;
+}
+
+.wkc .iee_archive .iee_event .event_desc {
+    border-left: 1px solid black;
+    float: none;
+    margin: 0 0 0 10px;
+    padding: 0 0 0 10px;
+    width: calc( 100% - 85px );
+}
+
+.wkc .archive-event {
+    position: relative;
+    min-height: 1px;
+    padding-left: 0;
+    padding-right: 0;
+    margin-bottom: 20px;
+}
+
+
+.wkc .iee_archive .archive-event .iee_event {
+    height: auto;
+    font-size: 16px;
+}
+
+.wkc .iee_event_meta .iee_organizermain {
+    background-color: transparent;
+    border: 0;
+    padding: 0;
+}
+
+.wkc .iee_event_meta .titlemain {
+    font-size: 18px;
+    font-weight: bold;
+    color: #444444;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.wkc .iee_event_meta .details,
+.wkc .iee_event_meta .organizer,
+.wkc .iee_event_meta .venue,
+.wkc .iee_event_meta .map {
+    margin-bottom: 20px;
+}
+
+.wkc .eventbrite-ticket-section {
+    border: 2px solid black;
+    border-left: 0;
+    border-right: 0;
+    margin-bottom: 20px;
+}
+
+.wp-block-separator {
+    border: 0;
+    display: table;
+    float: none;
+    margin: 50px 0;
+    width: 100%;
 }
 
 @media screen and ( min-width: 799px ) {
 
-    body:before {
-        /* Full width top bar: */
-        background-color: #1d5565;
-        content: ' ';
-        height: 2.5em;
-        left: 0;
-        position: absolute;
-        top: 0;
-        width: 100%;
-        z-index: 0;
-    }
-
     header {
         align-items: center;
         display: grid;
-        grid-template-columns: 100%;
+        grid-template-columns: min-content auto min-content;
         grid-template-rows: auto;
         grid-template-areas:
-            "site-name"
-            "logo"
-            "nav";
+            "logo logo logo"
+            "search nav tickets-link"
+            "search-field search-field search-field";
         justify-content: stretch;
-        margin: 0 auto 20px auto;
+        margin: 0 auto 30px auto;
         max-width: 1280px;
         padding: 0 10px;
         position: relative;
@@ -630,32 +840,17 @@ ul.instagram-pics {
     }
 
     header i.fas {
-        color: white;
+        color: #1d5565;
     }
 
-    .site-name {
-        background-color: transparent;
-        grid-area: site-name;
-        margin: 0;
-        text-align: center;
-        width: 100%;
-    }
-
-    .site-name a {
-        display: inline-block;
-    }
-
-    .site-name a:hover {
-        color: #E2B33E;
-    }
-
+    
     header a:hover {
         color: black;
     }
 
     .tickets-link {
         display: inline-block;
-        grid-area: site-name;
+        grid-area: tickets-link;
         max-width: max-content;
         text-align: left;
     }
@@ -665,45 +860,50 @@ ul.instagram-pics {
     }
 
     .search-field-container {
-        grid-area: site-name;
+        grid-area: search;
     }
 
     #header-search-field.active #search {
-        color: white;
+        color: #1d5565;
         background-color: transparent;
         display: block;
     }
 
-    #header-search-toggle,
+    #header-search-toggle {
+        grid-area: search;
+    }
+
     #header-search-field {
-        grid-area: site-name;
+        grid-area: search-field;
     }
 
     #header-search-toggle {
         cursor: pointer;
         display: block;
         max-width: 50px;
-        position: absolute;
-        right: 0;
     }
 
     #header-search-field {
-        margin-right: 40px;
-        position: relative;
-        width: calc( 100% - 40px );
+        background-color: white;
+        bottom: 35px;
+        left: 0;
+        max-width: 250px;
+        position: absolute;
+        width: 100%;
         z-index: 2;
     }
 
     #header-search-field #search {
-        float: right;
+        border: 2px solid #1d5565;
         font-size: 18px;
         margin: 0;
-        max-width: 300px;
+        padding: 10px;
+        text-align: center;
     }
 
     .header-logo {
-        margin: 20px auto 10px auto;
-        max-width: 200px;
+        margin: 40px auto;
+        max-width: 250px;
     }
     
     ul.nav-menu {
@@ -763,15 +963,15 @@ ul.instagram-pics {
 
     footer {
         display: grid;
-        grid-template-columns: calc( 33.33% - 10px)  calc( 33.33% - 10px)  calc( 33.33% - 10px);
+        grid-template-columns: calc( 33.33% - 25px)  calc( 33.33% - 25px)  calc( 33.33% - 25px);
         grid-template-rows: auto;
         grid-template-areas:
-        "contact actions nysca"
+        "contact nysca actions"
         "copyright copyright copyright";
         justify-content: space-between;
         margin: 0 auto;
         max-width: 1280px;
-        padding: 20px 10px;
+        padding: 20px 25px;
     }
 
     .footer-wrapper {
@@ -885,6 +1085,10 @@ ul.instagram-pics {
         text-align: center;
     }
 
+    #home h2 {
+        margin: 2em 0;
+    }
+
     .instagram-pics li {
         flex-basis: calc( 20% - 4px );
         padding-top: 20%;
@@ -894,10 +1098,23 @@ ul.instagram-pics {
         max-width: 750px;
     }
 
+    #calendar .post-content article {
+        box-sizing: border-box;
+        max-width: 1280px;
+        padding: 0 10px;
+    }
+
     .post-content p,
-    .post-content blockquote,
-    .post-content ul {
+    .post-content blockquote {
         margin: 0 auto 20px auto;
+    }
+
+    .post-content ul:not(.wp-block-gallery) {
+        margin: 2rem 0 2rem 1rem;
+    }
+
+    .post-content ul:not(.wp-block-gallery) li {
+        margin-bottom: 1rem;
     }
 
     .post-featured-image {
@@ -915,10 +1132,163 @@ ul.instagram-pics {
         width: 100%;
     }
 
+    .wkc .archive-event {
+        float: left;
+        width: calc( 50% - 5px );
+    }
+
+    .wkc .archive-event:nth-of-type(even) {
+        margin-left: 10px;
+    }
+
+    .wkc .archive-event:nth-of-type(5) {
+        display: none;
+    }
+
+    .wkc .iee_archive .iee_event .img_placeholder {
+        background-position: center center;
+        min-height: 200px;
+    }
+
+    .wkc .iee_event_meta .details {
+        float: left;
+        margin-right: 20px;
+        width: calc( 50% - 10px );
+    }
+
+    .wkc .iee_event_meta .organizer {
+        float: right;
+        width: calc( 50% - 10px );
+    }
+
+    .wkc .iee_event_meta .venue {
+        box-sizing: border-box;
+        padding-right: 10px;
+    }
+
+    #calendar.wkc .iee_archive .iee_event .img_placeholder {
+        background-position: center center;
+        min-height: 300px;
+    }
+
+    .team-member {
+        float: left;
+        width: calc( 33.33% - 50px );
+        margin: 40px 25px;
+    }
+
+    .team-member:nth-of-type(3n+3) {
+        clear: right;
+    }
+
+    .team-member:nth-of-type(3n+4) {
+        clear: left;
+    }
+
+    .columned {
+        column-count: 2;
+    }
+
 }
 
 @media screen and ( max-width: 1080px ) and ( min-width: 799px ) {
     .nav-menu .home {
         display: none;
+    }
+}
+
+
+
+@media (min-width: 992px) {
+    .wkc .archive-event,
+    .wkc .col-iee-md-4 {
+        float: left;
+        width: calc( 20% - 10px );
+    }
+
+    .wkc .archive-event {
+        margin-left: 10px;
+    }
+
+    .wkc .archive-event:first-of-type{
+        margin-left: 0;
+    }
+
+    .wkc .archive-event:nth-of-type(5) {
+        display: block;
+    }
+    
+    .wkc .iee_archive .iee_event .event_details {
+        display: block;
+    }
+
+    .wkc .iee_archive .iee_event .event_date {
+        align-items: center;
+        box-sizing: border-box;
+        background-color: rgba(0,0,0,0.5);
+        color: white;
+        height: 100px;
+        padding: 10px;
+        position: absolute;
+        right: 0;
+        top: 100px;
+        transition: all 250ms linear 0s;
+        width: 100px;
+    }
+
+    .wkc .iee_archive .iee_event:hover .event_date {
+        background-color: white;
+        color: black;
+        transition: all 250ms linear 0s;
+    }
+
+    .wkc .iee_archive .iee_event .event_desc {
+        border: 0;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+
+    .wkc .iee_archive .iee_event .event_desc .event_title {
+        min-height: 5em;
+        white-space: normal;
+    }
+
+    .wkc .iee_archive .iee_event .event_desc .event_address {
+        margin-top: 10px;
+    }
+
+    #calendar.wkc .archive-event, #calendar.wkc .col-iee-md-4 {
+        float: left;
+        width: calc( 50% - 10px );
+    }
+
+    #calendar.wkc .iee_archive .iee_event .event_date {
+        top: 200px;
+    }
+
+    #calendar.wkc .iee_archive .iee_event .event_desc .event_title {
+        min-height: 0;
+    }
+}
+
+/* Gutenberg Image Gallery Rules ------------------------------------ */
+
+@media screen and ( min-width: 768px ) {
+    .wp-block-gallery figure {
+        overflow: hidden;
+    }
+    
+    ul.wp-block-gallery.columns-2.is-cropped img {
+        max-height: 52%;
+    }
+    
+    ul.wp-block-gallery.columns-3.is-cropped img {
+        max-height: 33%;
+    }
+    
+    ul.wp-block-gallery.columns-2.is-cropped li:last-of-type img,
+    ul.wp-block-gallery.columns-3.is-cropped li:last-of-type img {
+        max-height: 100%;
     }
 }

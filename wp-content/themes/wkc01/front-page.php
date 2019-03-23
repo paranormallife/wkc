@@ -19,6 +19,12 @@
     </div>
 </main>
 
+<section class="eventbrite-home">
+    <h2>Upcoming Events</h2>
+    <?php echo do_shortcode('[eventbrite_events posts_per_page="5" col="2"]'); ?>
+    <a href="/calendar" class="button filled"><span>View Full Calendar</span></a>
+</section>
+
 <?php if (is_front_page()) { dynamic_sidebar( 'home_instagram' ); } ?>
 
 <?php get_footer(); ?>
