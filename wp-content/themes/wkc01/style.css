@@ -819,6 +819,24 @@ section.eventbrite-home {
     width: 100%;
 }
 
+.contact-form input,
+.contact-form textarea {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.contact-form select,
+.contact-form input,
+.contact-form textarea {
+    border: 1px solid #EBEBEB;
+    border-radius: 0;
+    box-shadow: none;
+    font: 400 16px/24px 'Steagal','Prompt', sans-serif; 
+    margin: 0.5em 0;
+    padding: 0.5em;
+    width: 100%;
+}
+
 @media screen and ( min-width: 799px ) {
 
     header {
