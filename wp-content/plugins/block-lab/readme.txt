@@ -3,9 +3,9 @@
 Contributors: lukecarbis, ryankienstra, Stino11, rheinardkorf
 Tags: Gutenberg, Blocks
 Requires at least: 5.0
-Tested up to: 5.1
+Tested up to: 5.1.1
 Requires PHP: 5.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl
 
@@ -37,13 +37,16 @@ Simple to use functions, ready to render and work with the values stored through
 
 == Installation ==
 = From Within WordPress =
-* Visit ‘Plugins > Add New’
-* Search for ‘Block Lab’
+* Visit Plugins > Add New
+* Search for "Block Lab"
 * Activate Block Lab from your Plugins page.
 
 = Manually =
-* Upload the block-lab folder to the /wp-content/plugins/ directory
-* Activate the Block Lab plugin through the ‘Plugins’ menu in WordPress
+* Clone Block Lab into a working directory with `https://github.com/getblocklab/block-lab.git`
+* `cd` into the `block-lab` directory, and run `npm install`
+* Next, build the scripts and styles with `npm build`
+* Move the `block-lab` folder to your `/wp-content/plugins/` directory
+* Activate the Block Lab plugin through the Plugins menu in WordPress
 
 == Frequently Asked Questions =
 **Q: Do I need to write code to use this plugin?**
@@ -60,6 +63,12 @@ A: [Here](https://github.com/getblocklab/block-lab/wiki)
 See [Contributing to Block Lab](https://github.com/getblocklab/block-lab/blob/develop/CONTRIBUTING.md).
 
 == Changelog ===
+ 
+= 1.2.1 - 2019-03-21 =
+
+* New: Automatic stylesheet enqueuing. Now you can create custom stylesheets for individual blocks! [Read more here](https://github.com/getblocklab/block-lab/wiki/5.-Styling-Custom-Blocks).
+* New: A User control type (for Block Lab Pro users)
+* Fix: Various multiselect bug fixes, allowing for empty values in the multiselect control
  
 = 1.2.0 - 2019-02-27 =
 
