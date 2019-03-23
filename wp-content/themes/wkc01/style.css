@@ -844,8 +844,18 @@ section.eventbrite-home {
     justify-content : space-between;
 }
 
-.contact-form .two-col input {
-    flex-basis: 45%;
+.contact-form .two-col span {
+    flex-basis: calc(50% - 5px);
+}
+
+.contact-form input[type=submit] {
+    background-color: #1d5565;
+    border: 0;
+    color: white;
+    display: block;
+    text-transform: uppercase;
+    margin: 0 auto;
+    max-width: 200px;
 }
 
 @media screen and ( min-width: 799px ) {
