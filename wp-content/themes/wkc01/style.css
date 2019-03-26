@@ -819,9 +819,9 @@ section.eventbrite-home {
     width: 100%;
 }
 
-.contact-form select,
-.contact-form input,
-.contact-form textarea {
+.wkc .contact-form select,
+.wkc .contact-form input,
+.wkc .contact-form textarea {
     box-sizing:border-box;
     border: 1px solid #EBEBEB;
     border-radius: 0;
@@ -832,23 +832,23 @@ section.eventbrite-home {
     width: 100%;
 }
 
-.contact-form select:focus,
-.contact-form input:focus,
-.contact-form textarea:focus {
+.wkc .contact-form select:focus,
+.wkc .contact-form input:focus,
+.wkc .contact-form textarea:focus {
     outline: none;
     border: 1px solid #E2B33E;
 }
 
-.contact-form .two-col {
+.wkc .contact-form .two-col {
     display: flex;
     justify-content : space-between;
 }
 
-.contact-form .two-col span {
+.wkc .contact-form .two-col span {
     flex-basis: calc(50% - 5px);
 }
 
-.contact-form input[type=submit] {
+.wkc .contact-form input[type=submit] {
     background-color: #1d5565;
     border: 0;
     color: white;
