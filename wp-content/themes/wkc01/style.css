@@ -832,6 +832,14 @@ section.eventbrite-home {
     width: 100%;
 }
 
+.contact-form input[type=email],
+.contact-form input[type=text],
+.contact-form input[type=url] {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 0.5em;
+}
+
 .wkc .contact-form select:focus,
 .wkc .contact-form input:focus,
 .wkc .contact-form textarea:focus {
