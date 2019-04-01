@@ -11,6 +11,13 @@
             <p><a href="tel:+16072785454">607-278-5454</a></p>
         </div>
         <div class="footer-actions">
+            <h2>Search</h2>
+            <div class="footer-search active">
+                <form action="/" method="get">
+                    <input type="text" name="s" id="search" placeholder="Search this site" value="<?php the_search_query(); ?>" />
+                    <input type="submit" value="Search" />
+                </form>
+            </div>
             <h2>Follow Us</h2>
             <div class="footer-social">
                 <ul>
@@ -22,15 +29,8 @@
             </div>
             <ul>
                 <li class="donate"><a href="#">Donate</a></li>
-                <li class="search" id="footer_search_toggle_button"><span onclick="footerSearchToggle()">Search</span></li>
                 <li class="newsletter" id="footer_newsletter_toggle_button"><span onclick="footerNewsletterToggle()">Subscribe</span></li>
             </ul>
-            <div class="footer-search" id="footer_search_toggle">
-                <form action="/" method="get">
-                    <input type="text" name="s" id="search" placeholder="Search this site" value="<?php the_search_query(); ?>" />
-                    <input type="submit" value="Search" />
-                </form>
-            </div>
             <div class="footer-newsletter" id="footer_newsletter_toggle">
                 <!-- Begin Mailchimp Signup Form -->
                 <div id="mc_embed_signup">

@@ -878,7 +878,7 @@ section.eventbrite-home {
             "search nav tickets-link"
             "search-field search-field search-field";
         justify-content: stretch;
-        margin: 0 auto 30px auto;
+        margin: 0 auto 15px auto;
         max-width: 1280px;
         padding: 0 10px;
         position: relative;
@@ -949,7 +949,7 @@ section.eventbrite-home {
     }
 
     .header-logo {
-        margin: 40px auto;
+        margin: 30px auto;
         max-width: 250px;
     }
     
@@ -998,8 +998,12 @@ section.eventbrite-home {
     
     .menu-item-has-children.active ul.sub-menu,
     .menu-item-has-children:hover ul.sub-menu {
-        padding-top: 15px;
         max-height: 9999px;
+    }
+
+    ul.mobile-menu ul.sub-menu li:first-of-type {
+        border-top: 0;
+        margin-top: 15px;
     }
 
     .site-name a,
@@ -1167,8 +1171,8 @@ section.eventbrite-home {
     .post-featured-image {
         align-items: center;
         display: inline-flex;
-        height: 400px;
-        max-height: 400px;
+        height: 350px;
+        max-height: 350px;
         overflow: hidden;
         position: relative;
         width: 100%;
