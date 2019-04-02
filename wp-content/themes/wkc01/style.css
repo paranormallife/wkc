@@ -949,7 +949,7 @@ section.eventbrite-home {
     }
 
     .header-logo {
-        margin: 30px auto;
+        margin: 45px auto;
         max-width: 250px;
     }
     
@@ -1171,8 +1171,8 @@ section.eventbrite-home {
     .post-featured-image {
         align-items: center;
         display: inline-flex;
-        height: 350px;
-        max-height: 350px;
+        height: 450px;
+        max-height: 450px;
         overflow: hidden;
         position: relative;
         width: 100%;
