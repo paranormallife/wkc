@@ -1276,6 +1276,10 @@ section.eventbrite-home {
         column-gap: 20px;
     }
 
+    .vertical-centered {
+        align-items: center;
+    }
+
 }
 
 @media screen and ( max-width: 1080px ) and ( min-width: 799px ) {
