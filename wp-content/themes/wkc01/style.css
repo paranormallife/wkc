@@ -100,8 +100,12 @@ header {
 }
 
 header i.fas {
-    color: #1d5565;
+    color: #666;
     font-size: 24px;
+}
+
+header a {
+    color: #666;
 }
 
 .site-name {
@@ -582,6 +586,10 @@ ul.instagram-pics {
     overflow: hidden;
     padding-top: 50%;
     position: relative;
+}
+
+.instagram-pics li:last-of-type {
+    display: none;
 }
 
 .instagram-pics li a {
@@ -1141,8 +1149,12 @@ section.eventbrite-home {
     }
 
     .instagram-pics li {
-        flex-basis: calc( 20% - 4px );
-        padding-top: 20%;
+        flex-basis: calc( 14.28% - 4px );
+        padding-top: 14.28%;
+    }
+
+    .instagram-pics li:last-of-type {
+        display: block;
     }
 
     .post-content article {
@@ -1223,18 +1235,41 @@ section.eventbrite-home {
     }
 
     .team-member {
-        float: left;
-        width: calc( 33.33% - 50px );
-        margin: 40px 25px;
+        align-items: stretch;
+        display: inline-flex;
+        justify-content: space-between;
     }
 
-    .team-member:nth-of-type(3n+3) {
-        clear: right;
+    .team-member .bio-image {
+        flex-basis: 32%;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        display: block;
     }
 
-    .team-member:nth-of-type(3n+4) {
-        clear: left;
+    .team-member .bio-image img {
+        display: none;
     }
+
+    .team-member .bio-content {
+        flex-basis: 65%;
+        text-align: justify;
+    }
+
+    .team-member h3 {
+        display: block;
+        font-size: 24px;
+        text-align: left;
+        margin: 0;
+    }
+
+    .team-member h4 {
+        font-size: 18px;
+        text-align: left;
+    }
+
+
 
     .columned {
         column-count: 2;
@@ -1255,7 +1290,7 @@ section.eventbrite-home {
     .wkc .archive-event,
     .wkc .col-iee-md-4 {
         float: left;
-        width: calc( 20% - 10px );
+        width: calc( 25% - 10px );
     }
 
     .wkc .archive-event {

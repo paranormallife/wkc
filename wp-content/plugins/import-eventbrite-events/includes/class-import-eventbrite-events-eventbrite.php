@@ -79,9 +79,6 @@ class Import_Eventbrite_Events_Eventbrite {
 		global $iee_events;
 		if ( ! empty( $eventbrite_event ) && is_array( $eventbrite_event ) && array_key_exists( 'id', $eventbrite_event ) ) {
 			$centralize_array = $this->generate_centralize_array( $eventbrite_event );
-			// echo "<pre>";
-			// print_r( $centralize_array );
-			// exit();
 			return $iee_events->common->import_events_into( $centralize_array, $event_args );
 		}
 	}
