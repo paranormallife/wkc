@@ -105,7 +105,7 @@ header i.fas {
 }
 
 header a {
-    color: #666;
+    color: black;
 }
 
 .site-name {
@@ -900,7 +900,7 @@ section.eventbrite-home {
 
     
     header a:hover {
-        color: black;
+        color: #666;
     }
 
     .tickets-link {
