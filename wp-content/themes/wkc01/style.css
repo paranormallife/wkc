@@ -134,6 +134,7 @@ header a {
 .header-logo {
     grid-area: logo;
     margin: 25px auto;
+    max-width: 400px;
 }
 
 .search-field {
@@ -957,8 +958,8 @@ section.eventbrite-home {
     }
 
     .header-logo {
-        margin: 45px auto;
-        max-width: 250px;
+        margin: 25px auto;
+        max-width: 225px;
     }
     
     ul.nav-menu {
