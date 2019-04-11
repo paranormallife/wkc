@@ -1,0 +1,26 @@
+{
+  "redirects": {
+    "title": "Redirect Rules",
+    "description": "",
+    "callback": "redirects",
+    "fields": {}
+  },
+  "404s": {
+    "title": "404 Error Log",
+    "description": "",
+    "callback": "404s",
+    "fields": {}
+  },
+  "import-export": {
+    "title": "Import/Export Redirect Rules",
+    "description": "",
+    "callback": "import_export",
+    "fields": {}
+  },
+  "support": {
+    "title": "Support",
+    "description": "",
+    "callback": "support",
+    "fields": {}
+  }
+}
