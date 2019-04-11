@@ -882,6 +882,14 @@ section.eventbrite-home {
     max-width: 200px;
 }
 
+.iee_event_meta.wkc > p, .iee_event_meta.wkc > br {
+    display: none;
+}
+
+.wkc .iee_event_meta .map {
+    width: 100%;
+}
+
 @media screen and ( min-width: 799px ) {
 
     header {

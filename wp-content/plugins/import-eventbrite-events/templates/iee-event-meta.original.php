@@ -70,6 +70,11 @@ $website             = get_post_meta( $event_id, 'iee_event_link', true );
 	}
 	?>
 
+	<?php if ( $website != '' ) { ?>
+		<strong><?php esc_html_e( 'Click to Register', 'import-eventbrite-events' ); ?>:</strong>
+		<a href="<?php echo esc_url( $website ); ?>"><?php echo $website; ?></a>
+	<?php } ?>
+
   </div>
 
 	<?php
@@ -79,7 +84,33 @@ $website             = get_post_meta( $event_id, 'iee_event_link', true );
 		$org_phone = get_post_meta( $event_id, 'organizer_phone', true );
 		$org_url   = get_post_meta( $event_id, 'organizer_url', true );
 
-	
+	if ( $org_name != '' ) {
+		?>
+		<div class="organizer">
+			<div class="titlemain"><?php esc_html_e( 'Organizer', 'import-eventbrite-events' ); ?></div>
+			<p><?php echo $org_name; ?></p>
+			</div>
+			<?php if ( $org_email != '' ) { ?>
+				<strong><?php esc_html_e( 'Email', 'import-eventbrite-events' ); ?>:</strong>
+				<a href="<?php echo 'mailto:' . $org_email; ?>"><?php echo $org_email; ?></a>
+			<?php } ?>
+			<?php if ( $org_phone != '' ) { ?>
+				<strong><?php esc_html_e( 'Phone', 'import-eventbrite-events' ); ?>:</strong>
+				<a href="<?php echo 'tel:' . $org_phone; ?>"><?php echo $org_phone; ?></a>
+			<?php } ?>
+			<?php if ( $website != '' ) { ?>
+				<strong style="display: block;">
+					<?php esc_html_e( 'Website', 'import-eventbrite-events' ); ?>:
+				</strong>
+				<a href="<?php echo esc_url( $org_url ); ?>"><?php echo $org_url; ?></a>
+			<?php
+}
+	}
+	?>
+	<div style="clear: both"></div>
+</div>
+
+<?php
 $venue_name       = get_post_meta( $event_id, 'venue_name', true );
 $venue_address    = get_post_meta( $event_id, 'venue_address', true );
 $venue['city']    = get_post_meta( $event_id, 'venue_city', true );
