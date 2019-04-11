@@ -5,7 +5,7 @@ Tags: Gutenberg, Blocks
 Requires at least: 5.0
 Tested up to: 5.1.1
 Requires PHP: 5.4
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl
 
@@ -64,6 +64,9 @@ See [Contributing to Block Lab](https://github.com/getblocklab/block-lab/blob/de
 
 == Changelog ===
  
+= 1.2.2 - 2019-04-05 =
+* New: Block Editor redesign
+
 = 1.2.1 - 2019-03-21 =
 
 * New: Automatic stylesheet enqueuing. Now you can create custom stylesheets for individual blocks! [Read more here](https://github.com/getblocklab/block-lab/wiki/5.-Styling-Custom-Blocks).
