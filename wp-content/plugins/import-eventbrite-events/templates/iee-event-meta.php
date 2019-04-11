@@ -16,7 +16,7 @@ $start_time          = date_i18n( 'h:i a', $start_date_str );
 $end_time            = date_i18n( 'h:i a', $end_date_str );
 $website             = get_post_meta( $event_id, 'iee_event_link', true );
 ?>
-<div class="iee_event_meta">
+<div class="iee_event_meta wkc">
 <div class="iee_organizermain">
   <div class="details">
 	<div class="titlemain" > <?php esc_html_e( 'Details', 'import-eventbrite-events' ); ?> </div>
