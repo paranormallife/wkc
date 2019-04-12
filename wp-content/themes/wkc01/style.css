@@ -684,7 +684,7 @@ ul.instagram-pics {
     background-color: #1d5565;
 }
 
-.wp-block-button__link.has-wkc-blue-background-color {
+.wp-block-button__link.has-wkc-blue-background-color:hover {
     background-color: black;
 }
 
