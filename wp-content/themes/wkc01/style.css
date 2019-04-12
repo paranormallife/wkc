@@ -684,6 +684,10 @@ ul.instagram-pics {
     background-color: #1d5565;
 }
 
+.wp-block-button__link.has-wkc-blue-background-color {
+    background-color: black;
+}
+
 .has-wkc-blue-color,
 .wp-block-button__link.has-wkc-blue-color {
     color: #1d5565;
