@@ -579,6 +579,8 @@ main {
     color: white;
 }
 
+
+
 ul.instagram-pics {
     box-sizing: border-box;
     display: flex;
@@ -677,19 +679,19 @@ ul.instagram-pics {
 
 /* Editor Styles ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-.has-wkc_blue-background-color {
+.has-wkc-blue-background-color {
     background-color: #1d5565;
 }
 
-.has-wkc_blue-color {
+.has-wkc-blue-color {
     color: #1d5565;
 }
 
-.has-wkc_gold-background-color {
+.has-wkc-gold-background-color {
     background-color: #E2B33E;
 }
 
-.has-wkc_gold-color {
+.has-wkc-gold-color {
     color: #E2B33E;
 }
 
