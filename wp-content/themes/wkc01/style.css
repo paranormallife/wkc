@@ -1271,7 +1271,7 @@ section.eventbrite-home {
     }
 
     .team-member .bio-image {
-        flex-basis: 32%;
+        flex-basis: 25%;
         background-position: center center;
         background-repeat: no-repeat;
         background-size: cover;
@@ -1283,7 +1283,7 @@ section.eventbrite-home {
     }
 
     .team-member .bio-content {
-        flex-basis: 65%;
+        flex-basis: calc( 75% - 10px );
         text-align: justify;
     }
 
