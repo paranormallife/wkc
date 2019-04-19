@@ -1283,7 +1283,7 @@ section.eventbrite-home {
     }
 
     .team-member .bio-content {
-        flex-basis: calc( 75% - 10px );
+        flex-basis: calc( 75% - 2rem );
         text-align: justify;
     }
 
