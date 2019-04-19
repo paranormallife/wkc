@@ -4,7 +4,7 @@
     <div class="swiper-wrapper">
 
         <?php
-        $the_query = new WP_Query( array( 'post_type' => 'hero', 'order' => 'ASC', 'posts_per-page' => -1 ) );
+        $the_query = new WP_Query( array( 'post_type' => 'hero', 'order' => 'ASC', 'orderby' => 'menu_order', 'posts_per-page' => -1 ) );
         while ( $the_query->have_posts() ) : $the_query->the_post();// GET THE POST THUMBNAIL
         $bg_image = wp_get_attachment_image_src( get_post_thumbnail_id( $post->ID ), 'single-post-thumbnail', false, '' );
         $subtitle = get_post_meta( $post->ID, 'hero_subtitle', true );
