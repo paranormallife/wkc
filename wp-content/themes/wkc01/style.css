@@ -904,6 +904,22 @@ section.eventbrite-home {
     width: 100%;
 }
 
+.post-content ul.social-links {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.post-content ul.social-links li {
+    display: inline-block;
+    font-size: 24px;
+    margin-right: 12px;
+}
+
+.post-content ul.social-links li span {
+    display: none;
+}
+
 @media screen and ( min-width: 799px ) {
 
     header {
@@ -1110,7 +1126,7 @@ section.eventbrite-home {
     }
 
     .swiper-slide .image .slide {
-        height: 500px;
+        height: 550px;
     }
 
     #homepage_carousel .swiper-pagination {
@@ -1136,8 +1152,8 @@ section.eventbrite-home {
     #homepage_carousel .content {
         background-color: rgba(255,255,255,0.8);
         position: absolute;
-        padding: 30px;
-        bottom: 100px;
+        padding: 10px;
+        bottom: 150px;
         max-width: 500px;
         text-align: left;
         z-index: 5;
@@ -1208,6 +1224,11 @@ section.eventbrite-home {
 
     .post-content ul:not(.wp-block-gallery) li {
         margin-bottom: 1rem;
+    }
+
+    .post-content ul.social-links {
+        margin: 0;
+        padding: 0;
     }
 
     .post-featured-image {
@@ -1299,8 +1320,6 @@ section.eventbrite-home {
         text-align: left;
     }
 
-
-
     .columned {
         column-count: 2;
         column-gap: 20px;
@@ -1308,6 +1327,19 @@ section.eventbrite-home {
 
     .vertical-centered {
         align-items: center;
+    }
+
+    .eventbrite_events .post-featured-image {
+        display: block;
+        height: auto;
+        margin: 0 auto;
+        max-height: 100vh;
+        max-width: 750px;
+        width: calc( 100% - 30px );
+    }
+
+    .eventbrite_events .post-featured-image img {
+        position: static;
     }
 
 }
