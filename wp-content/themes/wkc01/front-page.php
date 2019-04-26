@@ -25,6 +25,10 @@
     <a href="/calendar" class="button filled"><span>View Full Calendar</span></a>
 </section>
 
+<section class="home-donate">
+    <?php if (is_front_page()) { dynamic_sidebar( 'home_below_calendar' ); } ?>
+</section>
+
 <?php if (is_front_page()) { dynamic_sidebar( 'home_instagram' ); } ?>
 
 <?php get_footer(); ?>

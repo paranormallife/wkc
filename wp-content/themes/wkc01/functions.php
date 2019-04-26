@@ -157,6 +157,15 @@ function asw_widgets_init() {
 		'after_title'   => '</h2>',
 	) );
 
+	register_sidebar( array(
+		'name'          => 'Home Below Calendar',
+		'id'            => 'home_below_calendar',
+		'before_widget' => '<div class="post-content below-calendar>',
+		'after_widget'  => '</div>',
+		'before_title'  => '<h2 style="display: none">',
+		'after_title'   => '</h2>',
+	) );
+
 }
 add_action( 'widgets_init', 'asw_widgets_init' );
 
