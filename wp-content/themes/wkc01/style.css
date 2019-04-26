@@ -1161,7 +1161,7 @@ section.eventbrite-home {
 
     #homepage_carousel .content h2 {
         font: bold 24px 'Steagal Rough', 'Prompt', sans-serif;
-        margin: 0;
+        margin: 1rem 0 0 0;
         text-align: left;
     }
 
