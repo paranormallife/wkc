@@ -151,7 +151,7 @@ function asw_widgets_init() {
 	register_sidebar( array(
 		'name'          => 'Home Instagram Feed',
 		'id'            => 'home_instagram',
-		'before_widget' => '<div>',
+		'before_widget' => '<div class="home-instagram">',
 		'after_widget'  => '</div>',
 		'before_title'  => '<h2>',
 		'after_title'   => '</h2>',
