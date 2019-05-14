@@ -920,6 +920,15 @@ section.eventbrite-home {
     display: none;
 }
 
+.home-instagram {
+    background-color: #EEE;
+    box-sizing: border-box;
+    display: table;
+    margin-top: 2rem;
+    padding: 0 25px 25px 25px;
+    width: 100%;
+}
+
 @media screen and ( min-width: 799px ) {
 
     header {
