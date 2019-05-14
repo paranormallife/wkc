@@ -425,6 +425,8 @@ footer input:focus {
 
 #homepage_carousel {
     display: block;
+    margin: 0 auto;
+    max-width: 1920px;
     position: relative;
 }
 
@@ -442,6 +444,7 @@ footer input:focus {
 .swiper-slide .image .slide {
     background-position: center center;
     background-size: cover;
+    color: transparent;
     display: block;
     height: 300px;
     position: relative;
@@ -1242,9 +1245,11 @@ section.eventbrite-home {
 
     .post-featured-image {
         align-items: center;
-        display: inline-flex;
+        display: flex;
         height: 450px;
+        margin: 0 auto;
         max-height: 450px;
+        max-width: 1920px;
         overflow: hidden;
         position: relative;
         width: 100%;
