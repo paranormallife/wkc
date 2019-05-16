@@ -622,9 +622,6 @@ ul.instagram-pics {
 }
 
 .post-content article {
-    -webkit-hyphens: auto;
-    -ms-hyphens: auto;
-    hyphens: auto;
     margin: 50px auto;
     max-width: calc( 100vw - 50px );
     text-align: justify;
