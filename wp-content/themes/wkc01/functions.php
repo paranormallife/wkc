@@ -200,24 +200,4 @@ function mytheme_setup() {
 }
 add_action( 'after_setup_theme', 'mytheme_setup' );
 
-add_action('acf/init', 'my_register_blocks');
-function my_register_blocks() {
-
-    // check function exists
-    if( function_exists('acf_register_block') ) {
-
-        // register a testimonial block
-        acf_register_block(array(
-            'name'              => 'testimonial',
-            'title'             => __('Testimonial'),
-            'description'       => __('A custom testimonial block.'),
-            'render_template'   => 'snippets/team-member.php',
-            'category'          => 'formatting',
-            'icon'              => 'admin-comments',
-            'mode'              => 'preview',
-            'keywords'          => array( 'testimonial', 'quote' ),
-        ));
-    }
-}
-
 ?>

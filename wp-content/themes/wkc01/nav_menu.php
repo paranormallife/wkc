@@ -38,6 +38,10 @@
 		element.classList.remove("active");
 		var element = document.getElementById("header-search-field");
 		element.classList.remove("active");
+		var element = document.getElementById("newsletterIcon");
+		element.classList.remove("active");
+		var element = document.getElementById("newsletterSignup");
+		element.classList.remove("active");
 	}
 
 // Child Menus Toggle

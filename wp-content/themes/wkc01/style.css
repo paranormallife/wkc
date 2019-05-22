@@ -93,14 +93,16 @@ header {
     grid-template-areas: 
       "site-name site-name site-name"
       "logo logo logo"
-      "tickets-link nav search"
+      "newsletter nav search"
       "mobile-menu mobile-menu mobile-menu ";
     margin: 0 auto;
     width: calc( 100% - 50px );
 }
 
-header i.fas {
+header i.fas,
+header i.far {
     color: #666;
+    cursor: pointer;
     font-size: 24px;
 }
 
@@ -129,6 +131,60 @@ header a {
 
 .tickets-link span {
     display: none;
+}
+
+.header-newsletter-icon {
+    grid-area: newsletter;
+}
+
+.header-newsletter-signup {
+    display: block;
+    grid-area: mobile-menu;
+    max-height: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.header-newsletter-signup.active {
+    max-height: 999px;
+}
+
+.header-newsletter-signup .description {
+    margin: 1rem 0;
+}
+
+.header-newsletter-signup .signup-form {
+    align-items: center;
+    border: 1px solid black;
+    display: flex;
+    justify-content: stretch;
+    margin: 0 auto;
+    max-width: 600px;
+}
+
+.header-newsletter-signup .signup-form input {
+    padding: 0.5rem;
+}
+
+.header-newsletter-signup .signup-form input[type=submit] {
+    border: 0;
+    border-radius: 0;
+    background-color: black;
+    color: white;
+}
+
+.header-newsletter-signup .signup-form input[type=email] {
+    border: 0;
+    border-radius: 0;
+    flex-basis: 100%;
+}
+
+.header-newsletter-signup .signup-form input:focus {
+    outline: none;
+}
+
+.header-newsletter-signup #mce-responses {
+    margin-top: 1rem;
 }
 
 .header-logo {
@@ -230,7 +286,8 @@ ul.mobile-menu ul.sub-menu li:first-of-type {
     text-align: right;
 }
 
-#header-search-toggle.active .icon {
+#header-search-toggle.active .icon,
+.header-newsletter-icon.active i {
     opacity: 0.5;
 }
 
@@ -321,6 +378,8 @@ footer h2 {
 
 footer .footer-search form,
 footer .signup-form {
+    align-items: center;
+    box-sizing: border-box;
     display: inline-flex;
     justify-content: stretch;
     margin-bottom: 10px;
@@ -362,18 +421,36 @@ footer input:focus {
     z-index: 1;
 }
 
-.footer-search,
-.footer-newsletter {
-    display: block;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s cubic-bezier(0, 1, 0, 1);
+.header-newsletter-signup #mc_embed_signup .signup-form div.mce_inline_error {
+    background-color: white;
+    color: red;
+    padding: 1rem;
+    position: fixed;
+    top: 0;
 }
 
-.footer-search.active,
-.footer-newsletter.active {
-    max-height: 600px;
-    transition: max-height 1s ease-in-out;
+.footer-search input[type=text] {
+    background-color: transparent;
+    border: 1px solid white;
+}
+
+.footer-search input[type=submit] {
+    background-color: white;
+    border: 1px solid white;
+    color: black;
+}
+
+.footer-newsletter i, .footer-search i {
+    font-size: 24px;
+    width: 4rem;
+}
+
+footer .donate a {
+    background-color: black;
+    display: table;
+    margin: 1rem auto;
+    padding: 0.5rem 2rem;
+    text-align: center;
 }
 
 .footer-actions .active span {
@@ -399,11 +476,6 @@ footer input:focus {
     display: block;
     margin: 0 auto 10px auto;
     max-width: 150px;
-}
-
-.footer-actions h2,
-.footer-nysca h2 {
-    display: none;
 }
 
 .video-container {
@@ -938,8 +1010,8 @@ section.eventbrite-home {
         grid-template-rows: auto;
         grid-template-areas:
             "logo logo logo"
-            "search nav tickets-link"
-            "search-field search-field search-field";
+            "search nav newsletter"
+            "toggles toggles toggles";
         justify-content: stretch;
         margin: 0 auto 15px auto;
         max-width: 1280px;
@@ -965,6 +1037,10 @@ section.eventbrite-home {
         text-align: left;
     }
 
+    .header-newsletter-signup {
+        grid-area: toggles;
+    }
+
     #navIcon {
         display: none;
     }
@@ -984,7 +1060,7 @@ section.eventbrite-home {
     }
 
     #header-search-field {
-        grid-area: search-field;
+        grid-area: toggles;
     }
 
     #header-search-toggle {
@@ -995,10 +1071,9 @@ section.eventbrite-home {
 
     #header-search-field {
         background-color: white;
-        bottom: 35px;
-        left: 0;
-        max-width: 250px;
-        position: absolute;
+        margin: 1rem auto;
+        max-width: 600px;
+        position: static;
         width: 100%;
         z-index: 2;
     }
@@ -1009,6 +1084,19 @@ section.eventbrite-home {
         margin: 0;
         padding: 10px;
         text-align: center;
+    }
+
+    .header-newsletter-signup .signup-form {
+        border: 2px solid #1d5565;
+    }
+
+    .header-newsletter-signup .signup-form input[type=submit] {
+        background-color: #1d5565;
+        cursor: pointer;
+    }
+
+    .header-newsletter-signup .signup-form input[type=submit]:hover {
+        background-color: black;
     }
 
     .header-logo {
@@ -1080,7 +1168,8 @@ section.eventbrite-home {
         grid-template-columns: calc( 33.33% - 25px)  calc( 33.33% - 25px)  calc( 33.33% - 25px);
         grid-template-rows: auto;
         grid-template-areas:
-        "contact nysca actions"
+        "contact newsletter actions"
+        "search nysca actions"
         "copyright copyright copyright";
         justify-content: space-between;
         margin: 0 auto;
@@ -1103,6 +1192,10 @@ section.eventbrite-home {
         color: #E2B33E;
     }
 
+    footer .donate a {
+        margin: 2rem 0 0 0;
+    }
+
     .footer-contact {
         grid-area: contact;
     }
@@ -1123,10 +1216,16 @@ section.eventbrite-home {
 
     .footer-copyright {
         grid-area: copyright;
+        margin-top: 50px;
+        text-align: center;
     }
 
     .footer-actions li {
         margin: 0 10px 1em 0;
+    }
+
+    .footer-newsletter {
+        grid-area: newsletter;
     }
 
     .footer-actions h2,

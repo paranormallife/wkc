@@ -20,5 +20,9 @@
 		element.classList.remove("active");
 		var element = document.getElementById("navIcon");
 		element.classList.remove("active");
+		var element = document.getElementById("newsletterIcon");
+		element.classList.remove("active");
+		var element = document.getElementById("newsletterSignup");
+		element.classList.remove("active");
 	}
 </script>

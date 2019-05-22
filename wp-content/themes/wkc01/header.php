@@ -71,12 +71,9 @@
 
 <header>
    <?php get_template_part('snippets/header_logo'); ?>
-   <div class="tickets-link">
-      <a href="/calendar"><i class="fas fa-ticket-alt"></i><span>Buy Tickets</span></a>
-   </div>
+   <?php get_template_part('snippets/header_newsletter'); ?>
    <?php get_template_part('nav_menu'); ?>
    <?php get_template_part('snippets/header_search'); ?>
-   <div class="search-field-container"></div>
 </header>
 
 <!-- END OF HEADER.PHP -->
