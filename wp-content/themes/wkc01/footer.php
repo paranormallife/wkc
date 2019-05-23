@@ -18,7 +18,6 @@
                 <div id="mc_embed_signup_scroll">
                 
             <div class="mc-field-group signup-form">
-                <i class="far fa-newspaper"></i>
                 <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="you@example.com">
                 <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe">
             </div>
@@ -35,8 +34,8 @@
             <!--End mc_embed_signup-->
         </div>
         <div class="footer-search">
+            <h2>Search this Site</h2>
             <form action="/" method="get">
-                <i class="fas fa-search icon" onclick="searchToggle()"></i>
                 <input type="text" name="s" id="search" placeholder="Search this site" value="<?php the_search_query(); ?>" />
                 <input type="submit" value="Search" />
             </form>
@@ -51,9 +50,14 @@
                     <li class="twitter"><a target="_blank" href="https://twitter.com/49wkc"><i class="fab fa-twitter-square"><span>Twitter</span></i></a></li>
                 </ul>
             </div>
-            <div class="donate"><a href="/donate">Donate</a></div>
+        </div>
+        <div class="donate">
+            <h2>Donate</h2>
+            <p>Your donations support programs, scholarships, and stewardship of our historic building.</p>
+            <a href="/donate">Donate</a>
         </div>
         <div class="footer-nysca">
+            <h2>New York State Council on the Arts</h2>
             <?php get_template_part('snippets/nysca_logo'); ?>
             <p>WKC programming is funded in part by New York State Council on the Arts with the support of Governor Andrew Cuomo and the New York State Legislature.</p>
         </div>

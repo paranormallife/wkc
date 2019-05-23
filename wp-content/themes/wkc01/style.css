@@ -339,7 +339,6 @@ footer a {
 footer ul {
     display: block;
     list-style-type: none;
-    text-align: center;
 }
 
 footer ul li {
@@ -464,10 +463,9 @@ footer .donate a {
 .footer-nysca {
     display: block;
     margin: 10px auto;
-    max-width: 300px;
 }
 
-.footer-nysca p {
+.footer-nysca p, .donate p {
     font-size: 14px;
     font-style: italic;
 }
@@ -1169,7 +1167,7 @@ section.eventbrite-home {
         grid-template-rows: auto;
         grid-template-areas:
         "contact newsletter actions"
-        "search nysca actions"
+        "nysca search donate"
         "copyright copyright copyright";
         justify-content: space-between;
         margin: 0 auto;
@@ -1193,7 +1191,7 @@ section.eventbrite-home {
     }
 
     footer .donate a {
-        margin: 2rem 0 0 0;
+        margin: 1rem 0 0 0;
     }
 
     .footer-contact {
@@ -1212,6 +1210,10 @@ section.eventbrite-home {
         grid-area: nysca;
         margin: 0;
         max-width: 100%;
+    }
+
+    footer .donate {
+        grid-area: donate;
     }
 
     .footer-copyright {
