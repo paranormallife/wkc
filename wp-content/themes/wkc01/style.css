@@ -1519,12 +1519,11 @@ nav.prev-next-posts {
     }
 
     .wkc .iee_archive .iee_event .event_desc .event_title {
-        min-height: 5em;
         white-space: normal;
     }
 
     .wkc .iee_archive .iee_event .event_desc .event_address {
-        margin-top: 10px;
+        display: none;
     }
 
     #calendar.wkc .archive-event,
@@ -1535,9 +1534,21 @@ nav.prev-next-posts {
         width: calc( 50% - 10px );
     }
 
+    .wkc .archive-event:nth-of-type(odd) {
+        clear: left;
+    }
+    .wkc .archive-event:nth-of-type(even) {
+        clear: right;
+    }
+
     #home.wkc .archive-event {
         float: left;
         width: calc( 25% - 10px );
+    }
+
+    #home.wkc .archive-event:nth-of-type(even),
+    #home.wkc .archive-event:nth-of-type(odd) {
+        clear: none;
     }
 
     #calendar.wkc .iee_archive .iee_event .event_date {
