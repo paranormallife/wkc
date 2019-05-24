@@ -1170,8 +1170,8 @@ nav.prev-next-posts {
         grid-template-columns: calc( 33.33% - 25px)  calc( 33.33% - 25px)  calc( 33.33% - 25px);
         grid-template-rows: auto;
         grid-template-areas:
-        "contact newsletter actions"
-        "nysca search donate"
+        "contact newsletter donate"
+        "nysca search actions"
         "copyright copyright copyright";
         justify-content: space-between;
         margin: 0 auto;
