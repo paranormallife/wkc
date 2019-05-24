@@ -1529,9 +1529,15 @@ nav.prev-next-posts {
 
     #calendar.wkc .archive-event,
     #calendar.wkc .col-iee-md-4,
-    .wkc .archive-event, .wkc .col-iee-md-4 {
+    .wkc .archive-event,
+    .wkc .col-iee-md-4 {
         float: left;
         width: calc( 50% - 10px );
+    }
+
+    #home.wkc .archive-event {
+        float: left;
+        width: calc( 25% - 10px );
     }
 
     #calendar.wkc .iee_archive .iee_event .event_date {
