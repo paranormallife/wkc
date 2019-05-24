@@ -800,6 +800,10 @@ section.eventbrite-home {
     padding: 25px 25px 50px 25px;
 }
 
+nav.prev-next-posts {
+    display: none;
+}
+
 .wkc .row_grid {
     margin-left: 0;
     margin-right: 0;
