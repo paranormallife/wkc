@@ -1527,7 +1527,9 @@ nav.prev-next-posts {
         margin-top: 10px;
     }
 
-    #calendar.wkc .archive-event, #calendar.wkc .col-iee-md-4 {
+    #calendar.wkc .archive-event,
+    #calendar.wkc .col-iee-md-4,
+    .wkc .archive-event, .wkc .col-iee-md-4 {
         float: left;
         width: calc( 50% - 10px );
     }
