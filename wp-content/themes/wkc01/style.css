@@ -1531,13 +1531,14 @@ nav.prev-next-posts {
     .wkc .archive-event,
     .wkc .col-iee-md-4 {
         float: left;
-        width: calc( 50% - 10px );
+        width: calc( 50% - 5px );
     }
 
-    .wkc .archive-event:nth-of-type(odd) {
+    body:not(#home).wkc .archive-event:nth-of-type(odd) {
         clear: left;
+        margin-left: 0;
     }
-    .wkc .archive-event:nth-of-type(even) {
+    body:not(#home).wkc .archive-event:nth-of-type(even) {
         clear: right;
     }
 
