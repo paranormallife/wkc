@@ -7,8 +7,8 @@
         $blurb = block_value('bio-blurb');
     ?>
     <?php if( $image != '' ) { ?>
-        <div class="bio-image" style="background-image: url('<?php echo $image; ?>');">
-                <img src="<?php echo $image; ?>" alt="<?php echo $name; ?>" />
+        <div class="bio-image" style="background-image: url('<?php block_field('bio-image'); ?>');">
+                <img src="<?php block_field('bio-image'); ?>" alt="<?php echo $name; ?>" />
         </div>
     <?php } ?>
         <div class="bio-content">
