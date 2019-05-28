@@ -1368,7 +1368,7 @@ nav.prev-next-posts {
     }
 
     .wkc .archive-event:nth-of-type(even) {
-        margin-left: 10px;
+        margin-left: 30px;
     }
 
     .wkc .archive-event:nth-of-type(5) {
@@ -1531,7 +1531,7 @@ nav.prev-next-posts {
     .wkc .archive-event,
     .wkc .col-iee-md-4 {
         float: left;
-        width: calc( 50% - 5px );
+        width: calc( 50% - 15px );
     }
 
     body:not(#home).wkc .archive-event:nth-of-type(odd) {
