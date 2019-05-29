@@ -157,4 +157,4 @@ if ( $venue_name != '' && ( $venue_address != '' || $venue['city'] != '' ) ) {
 }
 ?>
 </div>
-<div style="clear: both;"></div>
+<div class="after-map" style="clear: both;"></div>

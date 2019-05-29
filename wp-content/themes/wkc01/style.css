@@ -1003,6 +1003,11 @@ nav.prev-next-posts {
     width: 100%;
 }
 
+.after-map + div,
+.after-map + div + div {
+    display: none; /* Hide duplicated descriptions */
+}
+
 @media screen and ( min-width: 799px ) {
 
     header {
