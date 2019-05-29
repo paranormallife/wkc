@@ -1004,7 +1004,9 @@ nav.prev-next-posts {
 }
 
 .after-map + div,
-.after-map + div + div {
+.after-map + div + div,
+.iee_organizermain + div + div,
+.iee_organizermain + div + div + div {
     display: none; /* Hide duplicated descriptions */
 }
 
