@@ -3,7 +3,7 @@
  * Block Lab Settings.
  *
  * @package   Block_Lab
- * @copyright Copyright(c) 2018, Block Lab
+ * @copyright Copyright(c) 2019, Block Lab
  * @license   http://opensource.org/licenses/GPL-2.0 GNU General Public License, version 2 (GPL-2.0)
  */
 
@@ -57,7 +57,7 @@ class Settings extends Component_Abstract {
 	 */
 	public function add_submenu_pages() {
 		add_submenu_page(
-			'edit.php?post_type=block_lab',
+			'edit.php?post_type=' . block_lab()->get_post_type_slug(),
 			__( 'Block Lab Settings', 'block-lab' ),
 			__( 'Settings', 'block-lab' ),
 			'manage_options',
@@ -77,21 +77,14 @@ class Settings extends Component_Abstract {
 	 * Render the Settings page.
 	 */
 	public function render_page() {
-		$tab = filter_input( INPUT_GET, 'tab', FILTER_SANITIZE_STRING );
-
-		ob_start();
-
-		$this->render_page_header();
-
-		switch ( $tab ) {
-			case 'license':
-			default:
-				include block_lab()->get_path() . 'php/views/license.php';
-				break;
-		}
-
-		$html = ob_get_clean();
-		echo '<div class="wrap block-lab-settings">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		?>
+		<div class="wrap block-lab-settings">
+			<?php
+			$this->render_page_header();
+			include block_lab()->get_path() . 'php/views/license.php';
+			?>
+		</div>
+		<?php
 	}
 
 	/**
@@ -104,7 +97,7 @@ class Settings extends Component_Abstract {
 			<a href="<?php echo esc_url( add_query_arg( 'tab', 'license' ) ); ?>" title="<?php esc_attr_e( 'License', 'block-lab' ); ?>" class="nav-tab nav-tab-active dashicons-before dashicons-nametag">
 				<?php esc_html_e( 'License', 'block-lab' ); ?>
 			</a>
-			<a href="https://github.com/getblocklab/block-lab/wiki" target="_blank" class="nav-tab dashicons-before dashicons-info">
+			<a href="https://getblocklab.com/docs/" target="_blank" class="nav-tab dashicons-before dashicons-info">
 				<?php esc_html_e( 'Documentation', 'block-lab' ); ?>
 			</a>
 			<a href="https://wordpress.org/support/plugin/block-lab/" target="_blank" class="nav-tab dashicons-before dashicons-sos">

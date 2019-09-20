@@ -3,7 +3,7 @@
  * Block Lab settings form for the License tab.
  *
  * @package   Block_Lab
- * @copyright Copyright(c) 2018, Block Lab
+ * @copyright Copyright(c) 2019, Block Lab
  * @license   http://opensource.org/licenses/GPL-2.0 GNU General Public License, version 2 (GPL-2.0)
  */
 
@@ -59,7 +59,7 @@
 							'<p>%1$s %2$s</p>',
 							sprintf(
 								// translators: A date.
-								__( 'Your license will be automatically renewed on %1$s.', 'block-lab' ),
+								__( 'Your license expires on %1$s.', 'block-lab' ),
 								'<strong>' . $expiry . '</strong>'
 							),
 							sprintf(

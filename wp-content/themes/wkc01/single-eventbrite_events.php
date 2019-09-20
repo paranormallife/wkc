@@ -18,6 +18,16 @@
         <article>
             <h1><?php the_title(); ?></h1>
             <div class="event-description"><?php echo get_the_content(); ?></div>
+            <?php
+                $video = get_post_meta( $post->ID, 'event_video', true );
+                if( $video != '' ) {
+                    echo '<div class="event-video">';
+                        echo '<div class="video-container">';
+                            echo $video;
+                        echo '</div>';
+                    echo '</div>';
+                }
+            ?>
             <div class="event-meta"><?php the_content(); ?></div>
         </article>
 

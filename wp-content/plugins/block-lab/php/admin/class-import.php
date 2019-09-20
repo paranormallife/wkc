@@ -3,7 +3,7 @@
  * Block Lab Importer.
  *
  * @package   Block_Lab
- * @copyright Copyright(c) 2018, Block Lab
+ * @copyright Copyright(c) 2019, Block Lab
  * @license   http://opensource.org/licenses/GPL-2.0 GNU General Public License, version 2 (GPL-2.0)
  */
 
@@ -67,7 +67,7 @@ class Import extends Component_Abstract {
 					$json   = file_get_contents( $file['file'] ); // @codingStandardsIgnoreLine
 					$blocks = json_decode( $json, true );
 
-					$this->import( $blocks );
+					$this->import_blocks( $blocks );
 				}
 				break;
 		}
@@ -204,7 +204,7 @@ class Import extends Component_Abstract {
 	 *
 	 * @param array $blocks An array of Block Lab content blocks.
 	 */
-	public function import( $blocks ) {
+	public function import_blocks( $blocks ) {
 		foreach ( $blocks as $config ) {
 			if ( ! isset( $config['title'] ) || ! isset( $config['name'] ) ) {
 				continue;
@@ -225,7 +225,7 @@ class Import extends Component_Abstract {
 					'post_name'    => $config['name'],
 					'post_content' => wp_slash( $json ),
 					'post_status'  => 'publish',
-					'post_type'    => 'block_lab',
+					'post_type'    => block_lab()->get_post_type_slug(),
 				)
 			);
 

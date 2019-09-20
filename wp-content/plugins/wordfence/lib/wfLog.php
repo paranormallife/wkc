@@ -1,7 +1,7 @@
 <?php
-require_once('wfDB.php');
-require_once('wfUtils.php');
-require_once('wfBrowscap.php');
+require_once(dirname(__FILE__) . '/wfDB.php');
+require_once(dirname(__FILE__) . '/wfUtils.php');
+require_once(dirname(__FILE__) . '/wfBrowscap.php');
 class wfLog {
 	public $canLogHit = true;
 	private $effectiveUserID = 0;
@@ -632,26 +632,30 @@ class wfLog {
 				wfBlock::createRateBlock($reason, $IP, $secsToGo);
 				wfActivityReport::logBlockedIP($IP, null, 'throttle');
 				$this->tagRequestForBlock($reason);
-				
-				if (wfConfig::get('alertOn_block')) {
-					$message = sprintf(__('Wordfence has blocked IP address %s.', 'wordfence'), $IP) . "\n";
-					$message .= sprintf(__('The reason is: "%s".', 'wordfence'), $reason);
-					if ($secsToGo > 0) {
-						$message .= "\n" . sprintf(__('The duration of the block is %s.', 'wordfence'), wfUtils::makeDuration($secsToGo, true));
-					}
-					wordfence::alert(sprintf(__('Blocking IP %s', 'wordfence'), $IP), $message, $IP);
-				}
+
+				$alertCallback = array(new wfBlockAlert($IP, $reason, $secsToGo), 'send');
+
+				do_action('wordfence_security_event', 'block', array(
+					'ip' => $IP,
+					'reason' => $reason,
+					'duration' => $secsToGo,
+				), $alertCallback);
 				wordfence::status(2, 'info', sprintf(__('Blocking IP %s. %s', 'wordfence'), $IP, $reason));
 			}
 			else if ($action == 'throttle') { //Rate limited - throttle
 				$secsToGo = wfBlock::rateLimitThrottleDuration();
 				wfBlock::createRateThrottle($reason, $IP, $secsToGo);
 				wfActivityReport::logBlockedIP($IP, null, 'throttle');
-				
+
+				do_action('wordfence_security_event', 'throttle', array(
+					'ip' => $IP,
+					'reason' => $reason,
+					'duration' => $secsToGo,
+				));
 				wordfence::status(2, 'info', sprintf(__('Throttling IP %s. %s', 'wordfence'), $IP, $reason));
 				wfConfig::inc('totalIPsThrottled');
 			}
-			$this->do503($secsToGo, $reason);
+			$this->do503($secsToGo, $reason, false);
 		}
 		
 		return;
@@ -669,8 +673,17 @@ class wfLog {
 		return false;
 	}
 	
-	public function do503($secsToGo, $reason){
+	public function do503($secsToGo, $reason, $sendEventToCentral = true){
 		$this->initLogRequest();
+
+		if ($sendEventToCentral) {
+			do_action('wordfence_security_event', 'block', array(
+				'ip' => wfUtils::inet_ntop($this->currentRequest->IP),
+				'reason' => $this->currentRequest->actionDescription ? $this->currentRequest->actionDescription : $reason,
+				'duration' => $secsToGo,
+			));
+		}
+
 		$this->currentRequest->statusCode = 503;
 		if (!$this->currentRequest->action) {
 			$this->currentRequest->action = 'blocked:wordfence';
@@ -689,7 +702,7 @@ class wfLog {
 			header('Retry-After: ' . $secsToGo);
 		}
 		$customText = wpautop(wp_strip_all_tags(wfConfig::get('blockCustomText', '')));
-		require_once('wf503.php');
+		require_once(dirname(__FILE__) . '/wf503.php');
 		exit();
 	}
 	private function redirect($URL){
@@ -1048,7 +1061,7 @@ class wfAdminUserMonitor {
 		$enabled = $options['scansEnabled_suspiciousAdminUsers'];
 		if ($enabled && is_multisite()) {
 			if (!function_exists('wp_is_large_network')) {
-				require_once ABSPATH . WPINC . '/ms-functions.php';
+				require_once(ABSPATH . WPINC . '/ms-functions.php');
 			}
 			$enabled = !wp_is_large_network('sites') && !wp_is_large_network('users');
 		}
@@ -1125,7 +1138,7 @@ class wfAdminUserMonitor {
 	 * @return array
 	 */
 	public function getCurrentAdmins() {
-		require_once ABSPATH . WPINC . '/user.php';
+		require_once(ABSPATH . WPINC . '/user.php');
 		if (is_multisite()) {
 			if (function_exists("get_sites")) {
 				$sites = get_sites(array(

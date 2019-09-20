@@ -1,9 +1,9 @@
 <?php
 /**
- * URL control.
+ * Email control.
  *
  * @package   Block_Lab
- * @copyright Copyright(c) 2018, Block Lab
+ * @copyright Copyright(c) 2019, Block Lab
  * @license http://opensource.org/licenses/GPL-2.0 GNU General Public License, version 2 (GPL-2.0)
  */
 
@@ -37,15 +37,9 @@ class Email extends Control_Abstract {
 	 * @return void
 	 */
 	public function register_settings() {
-		$this->settings[] = new Control_Setting(
-			array(
-				'name'     => 'help',
-				'label'    => __( 'Help Text', 'block-lab' ),
-				'type'     => 'text',
-				'default'  => '',
-				'sanitize' => 'sanitize_text_field',
-			)
-		);
+		$this->settings[] = new Control_Setting( $this->settings_config['location'] );
+		$this->settings[] = new Control_Setting( $this->settings_config['width'] );
+		$this->settings[] = new Control_Setting( $this->settings_config['help'] );
 		$this->settings[] = new Control_Setting(
 			array(
 				'name'     => 'default',
@@ -55,14 +49,6 @@ class Email extends Control_Abstract {
 				'sanitize' => 'sanitize_email',
 			)
 		);
-		$this->settings[] = new Control_Setting(
-			array(
-				'name'     => 'placeholder',
-				'label'    => __( 'Placeholder Text', 'block-lab' ),
-				'type'     => 'text',
-				'default'  => '',
-				'sanitize' => 'sanitize_text_field',
-			)
-		);
+		$this->settings[] = new Control_Setting( $this->settings_config['placeholder'] );
 	}
 }

@@ -447,7 +447,7 @@ footer input:focus {
 footer .donate a {
     background-color: black;
     display: table;
-    margin: 1rem auto;
+    margin: 1rem 0;
     padding: 0.5rem 2rem;
     text-align: center;
 }
@@ -472,7 +472,7 @@ footer .donate a {
 
 .footer-nysca img {
     display: block;
-    margin: 0 auto 10px auto;
+    margin: 0 0 10px 0;
     max-width: 150px;
 }
 
@@ -862,6 +862,7 @@ nav.prev-next-posts {
 }
 
 .wkc .event_address {
+    display: none;
     font-size: 14px;
 }
 
@@ -1008,6 +1009,32 @@ nav.prev-next-posts {
 .iee_organizermain + div + div,
 .iee_organizermain + div + div + div {
     display: none; /* Hide duplicated descriptions */
+}
+
+.event-description div {
+    margin-bottom: 1rem;
+}
+
+.iee_event_meta.wkc ._1mf {
+    display: none;
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    margin: 1rem auto;
+    max-width: 100%;
+    height: auto;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
 }
 
 @media screen and ( min-width: 799px ) {
@@ -1202,7 +1229,7 @@ nav.prev-next-posts {
     }
 
     footer .donate a {
-        margin: 1rem 0 0 0;
+        margin: 0.5rem 0 0 0;
     }
 
     .footer-contact {
@@ -1245,6 +1272,10 @@ nav.prev-next-posts {
     .footer-nysca h2 {
         display: block;
     }
+	
+	.footer-nysca img {
+	    margin: 0;
+	}
 
     .swiper-slide .image .slide {
         height: 550px;

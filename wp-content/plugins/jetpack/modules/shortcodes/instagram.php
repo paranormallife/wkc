@@ -13,6 +13,8 @@
  * @package Jetpack
  */
 
+use Automattic\Jetpack\Assets;
+
 /**
  * Embed Reversal for Instagram
  *
@@ -107,7 +109,7 @@ function jetpack_instagram_handler( $matches, $atts, $url ) {
 	if ( is_feed() ) {
 		// Instagram offers direct links to images, but not to videos.
 		if ( 'p' === $matches[1] ) {
-			$media_url = sprintf( 'http://instagr.am/p/%1$s/media/?size=l', $matches[2] );
+			$media_url = sprintf( 'https://instagr.am/p/%1$s/media/?size=l', $matches[2] );
 			return sprintf(
 				'<a href="%1$s" title="%2$s" target="_blank"><img src="%3$s" alt="%4$s" /></a>',
 				esc_url( $url ),
@@ -207,7 +209,7 @@ function jetpack_instagram_handler( $matches, $atts, $url ) {
 	if ( ! empty( $response_body->html ) ) {
 		wp_enqueue_script(
 			'jetpack-instagram-embed',
-			Jetpack::get_file_url_for_environment( '_inc/build/shortcodes/js/instagram.min.js', 'modules/shortcodes/js/instagram.js' ),
+			Assets::get_file_url_for_environment( '_inc/build/shortcodes/js/instagram.min.js', 'modules/shortcodes/js/instagram.js' ),
 			array( 'jquery' ),
 			JETPACK__VERSION,
 			true

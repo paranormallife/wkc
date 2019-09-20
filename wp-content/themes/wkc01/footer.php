@@ -53,13 +53,11 @@
         </div>
         <div class="donate">
             <h2>Donate</h2>
-            <p>Your donations support programs, scholarships, and stewardship of our historic building.</p>
-            <a href="/donate">Donate</a>
+            <a href="/donations">Donate</a>
         </div>
         <div class="footer-nysca">
             <h2>New York State Council on the Arts</h2>
             <?php get_template_part('snippets/nysca_logo'); ?>
-            <p>WKC programming is funded in part by New York State Council on the Arts with the support of Governor Andrew Cuomo and the New York State Legislature.</p>
         </div>
         <div class="footer-copyright">
             &copy; <?php echo date('Y '); bloginfo('name'); ?>

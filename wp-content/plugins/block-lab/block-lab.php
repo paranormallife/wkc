@@ -3,13 +3,13 @@
  * Block Lab
  *
  * @package   Block_Lab
- * @copyright Copyright(c) 2018, Block Lab
+ * @copyright Copyright(c) 2019, Block Lab
  * @license http://opensource.org/licenses/GPL-2.0 GNU General Public License, version 2 (GPL-2.0)
  *
  * Plugin Name: Block Lab
- * Plugin URI: https://github.com/getblocklab/block-lab
- * Description: Create custom blocks effortlessly. No Gutenberg development know-how required.
- * Version: 1.3.0
+ * Plugin URI: https://getblocklab.com
+ * Description: The easy way to build custom blocks for Gutenberg.
+ * Version: 1.4.1
  * Author: Block Lab
  * Author URI: https://getblocklab.com
  * License: GPL2
@@ -90,6 +90,9 @@ if ( ! function_exists( 'register_block_type' ) ) {
 // Load some helpers.
 require_once __DIR__ . '/php/helpers.php';
 
+// Handle deprecated functions.
+require_once __DIR__ . '/php/deprecated.php';
+
 /**
  * Get the plugin object.
  *
@@ -114,14 +117,8 @@ block_lab()
 	->set_file( __FILE__ )
 	->set_slug( 'block-lab' )
 	->set_url( plugin_dir_url( __FILE__ ) )
-	->set_version( __FILE__ );
-
-/**
- * Register plugin components.
- */
-block_lab()
-	->register_component( new \Block_Lab\Post_Types\Block_Post() )
-	->register_component( new \Block_Lab\Blocks\Loader() );
+	->set_version( __FILE__ )
+	->init();
 
 /**
  * Sometimes we need to do some things after the plugin is loaded, so call the Plugin_Interface::plugin_loaded().

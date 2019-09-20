@@ -1,5 +1,18 @@
 <?php
 
+use Automattic\Jetpack\Assets\Logo as Jetpack_Logo;
+use Automattic\Jetpack\Connection\Client;
+use Automattic\Jetpack\Connection\Manager as Connection_Manager;
+use Automattic\Jetpack\Connection\REST_Connector as REST_Connector;
+use Automattic\Jetpack\Connection\XMLRPC_Connector as XMLRPC_Connector;
+use Automattic\Jetpack\Constants;
+use Automattic\Jetpack\Roles;
+use Automattic\Jetpack\Sync\Functions;
+use Automattic\Jetpack\Sync\Sender;
+use Automattic\Jetpack\Sync\Users;
+use Automattic\Jetpack\Tracking;
+use Automattic\Jetpack\Assets;
+
 /*
 Options:
 jetpack_options (array)
@@ -27,10 +40,11 @@ require_once( JETPACK__PLUGIN_DIR . '_inc/lib/class.media.php' );
 class Jetpack {
 	public $xmlrpc_server = null;
 
-	private $xmlrpc_verification = null;
 	private $rest_authentication_status = null;
 
 	public $HTTP_RAW_POST_DATA = null; // copy of $GLOBALS['HTTP_RAW_POST_DATA']
+
+	private $tracking;
 
 	/**
 	 * @var array The handles of styles that are concatenated into jetpack.css.
@@ -68,6 +82,15 @@ class Jetpack {
 	);
 
 	/**
+	 * The handles of scripts that can be loaded asynchronously.
+	 *
+	 * @var array
+	 */
+	public $async_script_handles = array(
+		'woocommerce-analytics',
+	);
+
+	/**
 	 * Contains all assets that have had their URL rewritten to minified versions.
 	 *
 	 * @var array
@@ -91,7 +114,17 @@ class Jetpack {
 		'latex'               => array( 'wp-latex/wp-latex.php', 'WP LaTeX' )
 	);
 
-	static $capability_translations = array(
+	/**
+	 * Map of roles we care about, and their corresponding minimum capabilities.
+	 *
+	 * @deprecated 7.6 Use Automattic\Jetpack\Roles::$capability_translations instead.
+	 *
+	 * @access public
+	 * @static
+	 *
+	 * @var array
+	 */
+	public static $capability_translations = array(
 		'administrator' => 'manage_options',
 		'editor'        => 'edit_others_posts',
 		'author'        => 'publish_posts',
@@ -333,6 +366,11 @@ class Jetpack {
 	public $json_api_authorization_request = array();
 
 	/**
+	 * @var \Automattic\Jetpack\Connection\Manager
+	 */
+	protected $connection_manager;
+
+	/**
 	 * @var string Transient key used to prevent multiple simultaneous plugin upgrades
 	 */
 	public static $plugin_upgrade_lock_key = 'jetpack_upgrade_lock';
@@ -433,59 +471,69 @@ class Jetpack {
 			do_action( 'jetpack_sitemaps_purge_data' );
 		}
 
+		// Delete old stats cache
+		delete_option( 'jetpack_restapi_stats_cache' );
+
 		delete_transient( self::$plugin_upgrade_lock_key );
 	}
 
+	/**
+	 * Saves all the currently active modules to options.
+	 * Also fires Action hooks for each newly activated and deactivated module.
+	 *
+	 * @param $modules Array Array of active modules to be saved in options.
+	 *
+	 * @return $success bool true for success, false for failure.
+	 */
 	static function update_active_modules( $modules ) {
-		$current_modules = Jetpack_Options::get_option( 'active_modules', array() );
+		$current_modules      = Jetpack_Options::get_option( 'active_modules', array() );
+		$active_modules       = Jetpack::get_active_modules();
+		$new_active_modules   = array_diff( $modules, $current_modules );
+		$new_inactive_modules = array_diff( $active_modules, $modules );
+		$new_current_modules  = array_diff( array_merge( $current_modules, $new_active_modules ), $new_inactive_modules );
+		$reindexed_modules    = array_values( $new_current_modules );
+		$success              = Jetpack_Options::update_option( 'active_modules', array_unique( $reindexed_modules ) );
 
-		$success = Jetpack_Options::update_option( 'active_modules', array_unique( $modules ) );
+		foreach ( $new_active_modules as $module ) {
+			/**
+			 * Fires when a specific module is activated.
+			 *
+			 * @since 1.9.0
+			 *
+			 * @param string $module Module slug.
+			 * @param boolean $success whether the module was activated. @since 4.2
+			 */
+			do_action( 'jetpack_activate_module', $module, $success );
+			/**
+			 * Fires when a module is activated.
+			 * The dynamic part of the filter, $module, is the module slug.
+			 *
+			 * @since 1.9.0
+			 *
+			 * @param string $module Module slug.
+			 */
+			do_action( "jetpack_activate_module_$module", $module );
+		}
 
-		if ( is_array( $modules ) && is_array( $current_modules ) ) {
-			$new_active_modules = array_diff( $modules, $current_modules );
-			foreach( $new_active_modules as $module ) {
-				/**
-				 * Fires when a specific module is activated.
-				 *
-				 * @since 1.9.0
-				 *
-				 * @param string $module Module slug.
-				 * @param boolean $success whether the module was activated. @since 4.2
-				 */
-				do_action( 'jetpack_activate_module', $module, $success );
-
-				/**
-				 * Fires when a module is activated.
-				 * The dynamic part of the filter, $module, is the module slug.
-				 *
-				 * @since 1.9.0
-				 *
-				 * @param string $module Module slug.
-				 */
-				do_action( "jetpack_activate_module_$module", $module );
-			}
-
-			$new_deactive_modules = array_diff( $current_modules, $modules );
-			foreach( $new_deactive_modules as $module ) {
-				/**
-				 * Fired after a module has been deactivated.
-				 *
-				 * @since 4.2.0
-				 *
-				 * @param string $module Module slug.
-				 * @param boolean $success whether the module was deactivated.
-				 */
-				do_action( 'jetpack_deactivate_module', $module, $success );
-				/**
-				 * Fires when a module is deactivated.
-				 * The dynamic part of the filter, $module, is the module slug.
-				 *
-				 * @since 1.9.0
-				 *
-				 * @param string $module Module slug.
-				 */
-				do_action( "jetpack_deactivate_module_$module", $module );
-			}
+		foreach ( $new_inactive_modules as $module ) {
+			/**
+			 * Fired after a module has been deactivated.
+			 *
+			 * @since 4.2.0
+			 *
+			 * @param string $module Module slug.
+			 * @param boolean $success whether the module was deactivated.
+			 */
+			do_action( 'jetpack_deactivate_module', $module, $success );
+			/**
+			 * Fires when a module is deactivated.
+			 * The dynamic part of the filter, $module, is the module slug.
+			 *
+			 * @since 1.9.0
+			 *
+			 * @param string $module Module slug.
+			 */
+			do_action( "jetpack_deactivate_module_$module", $module );
 		}
 
 		return $success;
@@ -514,6 +562,23 @@ class Jetpack {
 			add_action( 'init', array( 'Jetpack_Keyring_Service_Helper', 'init' ), 9, 0 );
 		}
 
+		if ( self::jetpack_tos_agreed() ) {
+			$tracking = new Automattic\Jetpack\Plugin\Tracking();
+			add_action( 'init', array( $tracking, 'init' ) );
+		}
+
+
+		add_filter( 'jetpack_connection_secret_generator', function( $callable ) {
+			return function() {
+				return wp_generate_password( 32, false );
+			};
+		} );
+
+		add_action( 'jetpack_verify_signature_error', array( $this, 'track_xmlrpc_error' ) );
+
+		$this->connection_manager = new Connection_Manager();
+		$this->connection_manager->init();
+
 		/*
 		 * Load things that should only be in Network Admin.
 		 *
@@ -522,8 +587,16 @@ class Jetpack {
 		 * available
 		 */
 		if ( is_multisite() ) {
-			Jetpack_Network::init();
+			$network = Jetpack_Network::init();
+			$network->set_connection( $this->connection_manager );
 		}
+
+		add_filter(
+			'jetpack_signature_check_token',
+			array( __CLASS__, 'verify_onboarding_token' ),
+			10,
+			3
+		);
 
 		/**
 		 * Prepare Gutenberg Editor functionality
@@ -535,71 +608,16 @@ class Jetpack {
 
 		add_action( 'set_user_role', array( $this, 'maybe_clear_other_linked_admins_transient' ), 10, 3 );
 
-		// Unlink user before deleting the user from .com
-		add_action( 'deleted_user', array( $this, 'unlink_user' ), 10, 1 );
-		add_action( 'remove_user_from_blog', array( $this, 'unlink_user' ), 10, 1 );
+		// Unlink user before deleting the user from WP.com.
+		add_action( 'deleted_user', array( 'Automattic\\Jetpack\\Connection\\Manager', 'disconnect_user' ), 10, 1 );
+		add_action( 'remove_user_from_blog', array( 'Automattic\\Jetpack\\Connection\\Manager', 'disconnect_user' ), 10, 1 );
 
-		// Alternate XML-RPC, via ?for=jetpack&jetpack=comms
-		if ( isset( $_GET['jetpack'] ) && 'comms' == $_GET['jetpack'] && isset( $_GET['for'] ) && 'jetpack' == $_GET['for'] ) {
-			if ( ! defined( 'XMLRPC_REQUEST' ) ) {
-				define( 'XMLRPC_REQUEST', true );
-			}
-
-			add_action( 'template_redirect', array( $this, 'alternate_xmlrpc' ) );
-
-			add_filter( 'xmlrpc_methods', array( $this, 'remove_non_jetpack_xmlrpc_methods' ), 1000 );
-		}
-
-		if ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST && isset( $_GET['for'] ) && 'jetpack' == $_GET['for'] ) {
-			@ini_set( 'display_errors', false ); // Display errors can cause the XML to be not well formed.
-
-			require_once JETPACK__PLUGIN_DIR . 'class.jetpack-xmlrpc-server.php';
-			$this->xmlrpc_server = new Jetpack_XMLRPC_Server();
-
-			$this->require_jetpack_authentication();
-
-			if ( Jetpack::is_active() ) {
-				// Hack to preserve $HTTP_RAW_POST_DATA
-				add_filter( 'xmlrpc_methods', array( $this, 'xmlrpc_methods' ) );
-
-				$signed = $this->verify_xml_rpc_signature();
-				if ( $signed && ! is_wp_error( $signed ) ) {
-					// The actual API methods.
-					add_filter( 'xmlrpc_methods', array( $this->xmlrpc_server, 'xmlrpc_methods' ) );
-				} else {
-					// The jetpack.authorize method should be available for unauthenticated users on a site with an
-					// active Jetpack connection, so that additional users can link their account.
-					add_filter( 'xmlrpc_methods', array( $this->xmlrpc_server, 'authorize_xmlrpc_methods' ) );
-				}
-			} else {
-				// The bootstrap API methods.
-				add_filter( 'xmlrpc_methods', array( $this->xmlrpc_server, 'bootstrap_xmlrpc_methods' ) );
-				$signed = $this->verify_xml_rpc_signature();
-				if ( $signed && ! is_wp_error( $signed ) ) {
-					// the jetpack Provision method is available for blog-token-signed requests
-					add_filter( 'xmlrpc_methods', array( $this->xmlrpc_server, 'provision_xmlrpc_methods' ) );
-				}
-			}
-
-			// Now that no one can authenticate, and we're whitelisting all XML-RPC methods, force enable_xmlrpc on.
-			add_filter( 'pre_option_enable_xmlrpc', '__return_true' );
-		} elseif (
-			is_admin() &&
-			isset( $_POST['action'] ) && (
-				'jetpack_upload_file' == $_POST['action'] ||
-				'jetpack_update_file' == $_POST['action']
-			)
-		) {
-			$this->require_jetpack_authentication();
-			$this->add_remote_request_handlers();
-		} else {
-			if ( Jetpack::is_active() ) {
-				add_action( 'login_form_jetpack_json_api_authorization', array( &$this, 'login_form_json_api_authorization' ) );
-				add_filter( 'xmlrpc_methods', array( $this, 'public_xmlrpc_methods' ) );
-			}
-		}
+		// Initialize remote file upload request handlers.
+		$this->add_remote_request_handlers();
 
 		if ( Jetpack::is_active() ) {
+			add_action( 'login_form_jetpack_json_api_authorization', array( $this, 'login_form_json_api_authorization' ) );
+
 			Jetpack_Heartbeat::init();
 			if ( Jetpack::is_module_active( 'stats' ) && Jetpack::is_module_active( 'search' ) ) {
 				require_once JETPACK__PLUGIN_DIR . '_inc/lib/class.jetpack-search-performance-logger.php';
@@ -607,15 +625,10 @@ class Jetpack {
 			}
 		}
 
+		add_action( 'jetpack_event_log', array( 'Jetpack', 'log' ), 10, 2 );
+
 		add_filter( 'determine_current_user', array( $this, 'wp_rest_authenticate' ) );
 		add_filter( 'rest_authentication_errors', array( $this, 'wp_rest_authentication_errors' ) );
-
-		add_action( 'jetpack_clean_nonces', array( 'Jetpack', 'clean_nonces' ) );
-		if ( ! wp_next_scheduled( 'jetpack_clean_nonces' ) ) {
-			wp_schedule_event( time(), 'hourly', 'jetpack_clean_nonces' );
-		}
-
-		add_filter( 'xmlrpc_blog_options', array( $this, 'xmlrpc_options' ) );
 
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'admin_init', array( $this, 'dismiss_jetpack_notice' ) );
@@ -631,9 +644,6 @@ class Jetpack {
 
 		// JITM AJAX callback function
 		add_action( 'wp_ajax_jitm_ajax',  array( $this, 'jetpack_jitm_ajax_callback' ) );
-
-		// Universal ajax callback for all tracking events triggered via js
-		add_action( 'wp_ajax_jetpack_tracks', array( $this, 'jetpack_admin_ajax_tracks_callback' ) );
 
 		add_action( 'wp_ajax_jetpack_connection_banner', array( $this, 'jetpack_connection_banner_callback' ) );
 
@@ -663,7 +673,8 @@ class Jetpack {
 		add_filter( 'jetpack_get_default_modules', array( $this, 'handle_deprecated_modules' ), 99 );
 
 		// A filter to control all just in time messages
-		add_filter( 'jetpack_just_in_time_msgs', '__return_true', 9 );
+		add_filter( 'jetpack_just_in_time_msgs', array( $this, 'is_active_and_not_development_mode' ), 9 );
+
 		add_filter( 'jetpack_just_in_time_msg_cache', '__return_true', 9);
 
 		// If enabled, point edit post, page, and comment links to Calypso instead of WP-Admin.
@@ -675,6 +686,11 @@ class Jetpack {
 			//we'll override wp_notify_postauthor and wp_notify_moderator pluggable functions
 			//so they point moderation links on emails to Calypso
 			jetpack_require_lib( 'functions.wp-notify' );
+		}
+
+		// Hide edit post link if mobile app.
+		if ( Jetpack_User_Agent_Info::is_mobile_app() ) {
+			add_filter( 'edit_post_link', '__return_empty_string' );
 		}
 
 		// Update the Jetpack plan from API on heartbeats
@@ -691,6 +707,7 @@ class Jetpack {
 			add_action( 'wp_print_footer_scripts', array( $this, 'implode_frontend_css' ), -1 ); // Run first to trigger before `print_late_styles`
 		}
 
+
 		/**
 		 * These are sync actions that we need to keep track of for jitms
 		 */
@@ -700,6 +717,48 @@ class Jetpack {
 		if ( ! has_action( 'shutdown', array( $this, 'push_stats' ) ) ) {
 			add_action( 'shutdown', array( $this, 'push_stats' ) );
 		}
+
+		/*
+		 * Load some scripts asynchronously.
+		 */
+		add_action( 'script_loader_tag', array( $this, 'script_add_async' ), 10, 3 );
+	}
+
+	/**
+	 * Sets up the XMLRPC request handlers.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::setup_xmlrpc_handlers()
+	 *
+	 * @param Array                 $request_params Incoming request parameters.
+	 * @param Boolean               $is_active      Whether the connection is currently active.
+	 * @param Boolean               $is_signed      Whether the signature check has been successful.
+	 * @param Jetpack_XMLRPC_Server $xmlrpc_server  (optional) An instance of the server to use instead of instantiating a new one.
+	 */
+	public function setup_xmlrpc_handlers(
+		$request_params,
+		$is_active,
+		$is_signed,
+		Jetpack_XMLRPC_Server $xmlrpc_server = null
+	) {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::setup_xmlrpc_handlers' );
+		return $this->connection_manager->setup_xmlrpc_handlers(
+			$request_params,
+			$is_active,
+			$is_signed,
+			$xmlrpc_server
+		);
+	}
+
+	/**
+	 * Initialize REST API registration connector.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::initialize_rest_api_registration_connector()
+	 */
+	public function initialize_rest_api_registration_connector() {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::initialize_rest_api_registration_connector' );
+		$this->connection_manager->initialize_rest_api_registration_connector();
 	}
 
 	/**
@@ -803,19 +862,15 @@ class Jetpack {
 	 * Only used in our alternate XML-RPC endpoint, where we want to
 	 * ensure that Core and other plugins' methods are not exposed.
 	 *
-	 * @param array $methods
-	 * @return array filtered $methods
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::remove_non_jetpack_xmlrpc_methods()
+	 *
+	 * @param array $methods A list of registered WordPress XMLRPC methods.
+	 * @return array Filtered $methods
 	 */
-	function remove_non_jetpack_xmlrpc_methods( $methods ) {
-		$jetpack_methods = array();
-
-		foreach ( $methods as $method => $callback ) {
-			if ( 0 === strpos( $method, 'jetpack.' ) ) {
-				$jetpack_methods[ $method ] = $callback;
-			}
-		}
-
-		return $jetpack_methods;
+	public function remove_non_jetpack_xmlrpc_methods( $methods ) {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::remove_non_jetpack_xmlrpc_methods' );
+		return $this->connection_manager->remove_non_jetpack_xmlrpc_methods( $methods );
 	}
 
 	/**
@@ -824,70 +879,13 @@ class Jetpack {
 	 * security/firewall policies, we provide our own alternate XML RPC API endpoint
 	 * which is accessible via a different URI. Most of the below is copied directly
 	 * from /xmlrpc.php so that we're replicating it as closely as possible.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::alternate_xmlrpc()
 	 */
-	function alternate_xmlrpc() {
-		// phpcs:disable PHPCompatibility.Variables.RemovedPredefinedGlobalVariables.http_raw_post_dataDeprecatedRemoved
-		global $HTTP_RAW_POST_DATA;
-
-		// Some browser-embedded clients send cookies. We don't want them.
-		$_COOKIE = array();
-
-		// A bug in PHP < 5.2.2 makes $HTTP_RAW_POST_DATA not set by default,
-		// but we can do it ourself.
-		if ( ! isset( $HTTP_RAW_POST_DATA ) ) {
-			$HTTP_RAW_POST_DATA = file_get_contents( 'php://input' );
-		}
-
-		// fix for mozBlog and other cases where '<?xml' isn't on the very first line
-		if ( isset( $HTTP_RAW_POST_DATA ) ) {
-			$HTTP_RAW_POST_DATA = trim( $HTTP_RAW_POST_DATA );
-		}
-
-		// phpcs:enable
-
-		include_once( ABSPATH . 'wp-admin/includes/admin.php' );
-		include_once( ABSPATH . WPINC . '/class-IXR.php' );
-		include_once( ABSPATH . WPINC . '/class-wp-xmlrpc-server.php' );
-
-		/**
-		 * Filters the class used for handling XML-RPC requests.
-		 *
-		 * @since 3.1.0
-		 *
-		 * @param string $class The name of the XML-RPC server class.
-		 */
-		$wp_xmlrpc_server_class = apply_filters( 'wp_xmlrpc_server_class', 'wp_xmlrpc_server' );
-		$wp_xmlrpc_server = new $wp_xmlrpc_server_class;
-
-		// Fire off the request
-		nocache_headers();
-		$wp_xmlrpc_server->serve_request();
-
-		exit;
-	}
-
-	function jetpack_admin_ajax_tracks_callback() {
-		// Check for nonce
-		if ( ! isset( $_REQUEST['tracksNonce'] ) || ! wp_verify_nonce( $_REQUEST['tracksNonce'], 'jp-tracks-ajax-nonce' ) ) {
-			wp_die( 'Permissions check failed.' );
-		}
-
-		if ( ! isset( $_REQUEST['tracksEventName'] ) || ! isset( $_REQUEST['tracksEventType'] )  ) {
-			wp_die( 'No valid event name or type.' );
-		}
-
-		$tracks_data = array();
-		if ( 'click' === $_REQUEST['tracksEventType'] && isset( $_REQUEST['tracksEventProp'] ) ) {
-			if ( is_array( $_REQUEST['tracksEventProp'] ) ) {
-				$tracks_data = $_REQUEST['tracksEventProp'];
-			} else {
-				$tracks_data = array( 'clicked' => $_REQUEST['tracksEventProp'] );
-			}
-		}
-
-		JetpackTracking::record_user_event( $_REQUEST['tracksEventName'], $tracks_data );
-		wp_send_json_success();
-		wp_die();
+	public function alternate_xmlrpc() {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::alternate_xmlrpc' );
+		$this->connection_manager->alternate_xmlrpc();
 	}
 
 	/**
@@ -1033,16 +1031,15 @@ class Jetpack {
 		return $caps;
 	}
 
-	function require_jetpack_authentication() {
-		// Don't let anyone authenticate
-		$_COOKIE = array();
-		remove_all_filters( 'authenticate' );
-		remove_all_actions( 'wp_login_failed' );
-
-		if ( Jetpack::is_active() ) {
-			// Allow Jetpack authentication
-			add_filter( 'authenticate', array( $this, 'authenticate_jetpack' ), 10, 3 );
-		}
+	/**
+	 * Require a Jetpack authentication.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::require_jetpack_authentication()
+	 */
+	public function require_jetpack_authentication() {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::require_jetpack_authentication' );
+		$this->connection_manager->require_jetpack_authentication();
 	}
 
 	/**
@@ -1065,7 +1062,7 @@ class Jetpack {
 		if ( ! wp_script_is( 'spin', 'registered' ) ) {
 			wp_register_script(
 				'spin',
-				self::get_file_url_for_environment( '_inc/build/spin.min.js', '_inc/spin.js' ),
+				Assets::get_file_url_for_environment( '_inc/build/spin.min.js', '_inc/spin.js' ),
 				false,
 				'1.3'
 			);
@@ -1074,7 +1071,7 @@ class Jetpack {
 		if ( ! wp_script_is( 'jquery.spin', 'registered' ) ) {
 			wp_register_script(
 				'jquery.spin',
-				self::get_file_url_for_environment( '_inc/build/jquery.spin.min.js', '_inc/jquery.spin.js' ),
+				Assets::get_file_url_for_environment( '_inc/build/jquery.spin.min.js', '_inc/jquery.spin.js' ),
 				array( 'jquery', 'spin' ),
 				'1.3'
 			);
@@ -1083,7 +1080,7 @@ class Jetpack {
 		if ( ! wp_script_is( 'jetpack-gallery-settings', 'registered' ) ) {
 			wp_register_script(
 				'jetpack-gallery-settings',
-				self::get_file_url_for_environment( '_inc/build/gallery-settings.min.js', '_inc/gallery-settings.js' ),
+				Assets::get_file_url_for_environment( '_inc/build/gallery-settings.min.js', '_inc/gallery-settings.js' ),
 				array( 'media-views' ),
 				'20121225'
 			);
@@ -1092,7 +1089,7 @@ class Jetpack {
 		if ( ! wp_script_is( 'jetpack-twitter-timeline', 'registered' ) ) {
 			wp_register_script(
 				'jetpack-twitter-timeline',
-				self::get_file_url_for_environment( '_inc/build/twitter-timeline.min.js', '_inc/twitter-timeline.js' ),
+				Assets::get_file_url_for_environment( '_inc/build/twitter-timeline.min.js', '_inc/twitter-timeline.js' ),
 				array( 'jquery' ),
 				'4.0.0',
 				true
@@ -1102,7 +1099,7 @@ class Jetpack {
 		if ( ! wp_script_is( 'jetpack-facebook-embed', 'registered' ) ) {
 			wp_register_script(
 				'jetpack-facebook-embed',
-				self::get_file_url_for_environment( '_inc/build/facebook-embed.min.js', '_inc/facebook-embed.js' ),
+				Assets::get_file_url_for_environment( '_inc/build/facebook-embed.min.js', '_inc/facebook-embed.js' ),
 				array( 'jquery' ),
 				null,
 				true
@@ -1442,8 +1439,8 @@ class Jetpack {
 	 * @return string ( '1' | '0' )
 	 **/
 	public static function is_version_controlled() {
-		_deprecated_function( __METHOD__, 'jetpack-4.2', 'Jetpack_Sync_Functions::is_version_controlled' );
-		return (string) (int) Jetpack_Sync_Functions::is_version_controlled();
+		_deprecated_function( __METHOD__, 'jetpack-4.2', 'Functions::is_version_controlled' );
+		return (string) (int) Functions::is_version_controlled();
 	}
 
 	/**
@@ -1674,7 +1671,7 @@ class Jetpack {
 		 */
 		return (bool) apply_filters(
 			'jetpack_development_version',
-			! preg_match( '/^\d+(\.\d+)+$/', Jetpack_Constants::get_constant( 'JETPACK__VERSION' ) )
+			! preg_match( '/^\d+(\.\d+)+$/', Constants::get_constant( 'JETPACK__VERSION' ) )
 		);
 	}
 
@@ -1682,18 +1679,14 @@ class Jetpack {
 	 * Is a given user (or the current user if none is specified) linked to a WordPress.com user?
 	 */
 	public static function is_user_connected( $user_id = false ) {
-		$user_id = false === $user_id ? get_current_user_id() : absint( $user_id );
-		if ( ! $user_id ) {
-			return false;
-		}
-
-		return (bool) Jetpack_Data::get_access_token( $user_id );
+		return self::connection()->is_user_connected( $user_id );
 	}
 
 	/**
 	 * Get the wpcom user data of the current|specified connected user.
 	 */
 	public static function get_connected_user_data( $user_id = null ) {
+		// TODO: remove in favor of Connection_Manager->get_connected_user_data
 		if ( ! $user_id ) {
 			$user_id = get_current_user_id();
 		}
@@ -1704,7 +1697,6 @@ class Jetpack {
 			return $cached_user_data;
 		}
 
-		Jetpack::load_xml_rpc_client();
 		$xml = new Jetpack_IXR_Client( array(
 			'user_id' => $user_id,
 		) );
@@ -1725,7 +1717,7 @@ class Jetpack {
 		if ( ! $user_id ) {
 			$user_id = get_current_user_id();
 		}
-		Jetpack::load_xml_rpc_client();
+
 		$xml = new Jetpack_IXR_Client( array(
 			'user_id' => $user_id,
 		) );
@@ -1747,9 +1739,16 @@ class Jetpack {
 		return '';
 	}
 
-	function current_user_is_connection_owner() {
-		$user_token = Jetpack_Data::get_access_token( JETPACK_MASTER_USER );
-		return $user_token && is_object( $user_token ) && isset( $user_token->external_user_id ) && get_current_user_id() === $user_token->external_user_id;
+	/**
+	 * Whether the current user is the connection owner.
+	 *
+	 * @deprecated since 7.7
+	 *
+	 * @return bool Whether the current user is the connection owner.
+	 */
+	public function current_user_is_connection_owner() {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::is_connection_owner' );
+		return self::connection()->is_connection_owner();
 	}
 
 	/**
@@ -1791,14 +1790,15 @@ class Jetpack {
 		wp_oembed_add_provider( '#https?://[^.]+\.(wistia\.com|wi\.st)/(medias|embed)/.*#', 'https://fast.wistia.com/oembed', true );
 		wp_oembed_add_provider( '#https?://sketchfab\.com/.*#i', 'https://sketchfab.com/oembed', true );
 		wp_oembed_add_provider( '#https?://(www\.)?icloud\.com/keynote/.*#i', 'https://iwmb.icloud.com/iwmb/oembed', true );
+		wp_oembed_add_provider( 'https://song.link/*', 'https://song.link/oembed', false );
 	}
 
 	/**
 	 * Synchronize connected user role changes
 	 */
 	function user_role_change( $user_id ) {
-		_deprecated_function( __METHOD__, 'jetpack-4.2', 'Jetpack_Sync_Users::user_role_change()' );
-		Jetpack_Sync_Users::user_role_change( $user_id );
+		_deprecated_function( __METHOD__, 'jetpack-4.2', 'Users::user_role_change()' );
+		Users::user_role_change( $user_id );
 	}
 
 	/**
@@ -2244,7 +2244,7 @@ class Jetpack {
 		);
 
 		Jetpack::state( 'message', 'modules_activated' );
-		Jetpack::activate_default_modules( $jetpack_version, JETPACK__VERSION, $reactivate_modules );
+		Jetpack::activate_default_modules( $jetpack_version, JETPACK__VERSION, $reactivate_modules, $redirect );
 
 		if ( $redirect ) {
 			$page = 'jetpack'; // make sure we redirect to either settings or the jetpack page
@@ -2445,7 +2445,15 @@ class Jetpack {
 	 * Generate a module's path from its slug.
 	 */
 	public static function get_module_path( $slug ) {
-		return JETPACK__PLUGIN_DIR . "modules/$slug.php";
+		/**
+		 * Filters the path of a modules.
+		 *
+		 * @since 7.4.0
+		 *
+		 * @param array $return The absolute path to a module's root php file
+		 * @param string $slug The module slug
+		 */
+		return apply_filters( 'jetpack_get_module_path', JETPACK__PLUGIN_DIR . "modules/$slug.php", $slug );
 	}
 
 	/**
@@ -2457,7 +2465,6 @@ class Jetpack {
 		$headers = array(
 			'name'                      => 'Module Name',
 			'description'               => 'Module Description',
-			'jumpstart_desc'            => 'Jumpstart Description',
 			'sort'                      => 'Sort Order',
 			'recommendation_order'      => 'Recommendation Order',
 			'introduced'                => 'First Introduced',
@@ -2517,12 +2524,11 @@ class Jetpack {
 		 * Filters the feature array on a module.
 		 *
 		 * This filter allows you to control where each module is filtered: Recommended,
-		 * Jumpstart, and the default "Other" listing.
+		 * and the default "Other" listing.
 		 *
 		 * @since 3.5.0
 		 *
 		 * @param array   $mod['feature'] The areas to feature this module:
-		 *     'Jumpstart' adds to the "Jumpstart" option to activate many modules at once.
 		 *     'Recommended' shows on the main Jetpack admin screen.
 		 *     'Other' should be the default if no other value is in the array.
 		 * @param string  $module The slug of the module, e.g. sharedaddy.
@@ -2555,6 +2561,11 @@ class Jetpack {
 		$cache_key = 'jetpack_file_data_' . JETPACK__VERSION;
 
 		$file_data_option = get_transient( $cache_key );
+
+		if ( ! is_array( $file_data_option ) ) {
+			delete_transient( $cache_key );
+			$file_data_option = false;
+		}
 
 		if ( false === $file_data_option ) {
 			$file_data_option = array();
@@ -2771,10 +2782,34 @@ class Jetpack {
 		$min_version = false,
 		$max_version = false,
 		$other_modules = array(),
-		$redirect = true,
-		$send_state_messages = true
+		$redirect = null,
+		$send_state_messages = null
 	) {
 		$jetpack = Jetpack::init();
+
+		if ( is_null( $redirect ) ) {
+			if (
+				( defined( 'REST_REQUEST' ) && REST_REQUEST )
+			||
+				( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST )
+			||
+				( defined( 'WP_CLI' ) && WP_CLI )
+			||
+				( defined( 'DOING_CRON' ) && DOING_CRON )
+			||
+				( defined( 'DOING_AJAX' ) && DOING_AJAX )
+			) {
+				$redirect = false;
+			} elseif ( is_admin() ) {
+				$redirect = true;
+			} else {
+				$redirect = false;
+			}
+		}
+
+		if ( is_null( $send_state_messages ) ) {
+			$send_state_messages = current_user_can( 'jetpack_activate_modules' );
+		}
 
 		$modules = Jetpack::get_default_modules( $min_version, $max_version );
 		$modules = array_merge( $other_modules, $modules );
@@ -2796,18 +2831,22 @@ class Jetpack {
 			}
 		}
 
-		if ( $deactivated && $redirect ) {
-			Jetpack::state( 'deactivated_plugins', join( ',', $deactivated ) );
+		if ( $deactivated ) {
+			if ( $send_state_messages ) {
+				Jetpack::state( 'deactivated_plugins', join( ',', $deactivated ) );
+			}
 
-			$url = add_query_arg(
-				array(
-					'action'   => 'activate_default_modules',
-					'_wpnonce' => wp_create_nonce( 'activate_default_modules' ),
-				),
-				add_query_arg( compact( 'min_version', 'max_version', 'other_modules' ), Jetpack::admin_url( 'page=jetpack' ) )
-			);
-			wp_safe_redirect( $url );
-			exit;
+			if ( $redirect ) {
+				$url = add_query_arg(
+					array(
+						'action'   => 'activate_default_modules',
+						'_wpnonce' => wp_create_nonce( 'activate_default_modules' ),
+					),
+					add_query_arg( compact( 'min_version', 'max_version', 'other_modules' ), Jetpack::admin_url( 'page=jetpack' ) )
+				);
+				wp_safe_redirect( $url );
+				exit;
+			}
 		}
 
 		/**
@@ -3212,15 +3251,17 @@ p {
 	 */
 	public static function disconnect( $update_activated_state = true ) {
 		wp_clear_scheduled_hook( 'jetpack_clean_nonces' );
-		Jetpack::clean_nonces( true );
+		$connection = self::connection();
+		$connection->clean_nonces( true );
 
 		// If the site is in an IDC because sync is not allowed,
 		// let's make sure to not disconnect the production site.
 		if ( ! self::validate_sync_error_idc_option() ) {
-			JetpackTracking::record_user_event( 'disconnect_site', array() );
-			Jetpack::load_xml_rpc_client();
+			$tracking = new Tracking();
+			$tracking->record_user_event( 'disconnect_site', array() );
+
 			$xml = new Jetpack_IXR_Client();
-			$xml->query( 'jetpack.deregister' );
+			$xml->query( 'jetpack.deregister', get_current_user_id() );
 		}
 
 		Jetpack_Options::delete_option(
@@ -3265,46 +3306,24 @@ p {
 		delete_transient( $transient_key );
 
 		// Delete all the sync related data. Since it could be taking up space.
-		require_once JETPACK__PLUGIN_DIR . 'sync/class.jetpack-sync-sender.php';
-		Jetpack_Sync_Sender::get_instance()->uninstall();
+		Sender::get_instance()->uninstall();
 
 		// Disable the Heartbeat cron
 		Jetpack_Heartbeat::init()->deactivate();
 	}
 
 	/**
-	 * Unlinks the current user from the linked WordPress.com user
+	 * Unlinks the current user from the linked WordPress.com user.
+	 *
+	 * @deprecated since 7.7
+	 * @see Automattic\Jetpack\Connection\Manager::disconnect_user()
+	 *
+	 * @param Integer $user_id the user identifier.
+	 * @return Boolean Whether the disconnection of the user was successful.
 	 */
 	public static function unlink_user( $user_id = null ) {
-		if ( ! $tokens = Jetpack_Options::get_option( 'user_tokens' ) )
-			return false;
-
-		$user_id = empty( $user_id ) ? get_current_user_id() : intval( $user_id );
-
-		if ( Jetpack_Options::get_option( 'master_user' ) == $user_id )
-			return false;
-
-		if ( ! isset( $tokens[ $user_id ] ) )
-			return false;
-
-		Jetpack::load_xml_rpc_client();
-		$xml = new Jetpack_IXR_Client( compact( 'user_id' ) );
-		$xml->query( 'jetpack.unlink_user', $user_id );
-
-		unset( $tokens[ $user_id ] );
-
-		Jetpack_Options::update_option( 'user_tokens', $tokens );
-
-		/**
-		 * Fires after the current user has been unlinked from WordPress.com.
-		 *
-		 * @since 4.1.0
-		 *
-		 * @param int $user_id The current user's ID.
-		 */
-		do_action( 'jetpack_unlinked_user', $user_id );
-
-		return true;
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::disconnect_user' );
+		return Connection_Manager::disconnect_user( $user_id );
 	}
 
 	/**
@@ -3322,7 +3341,7 @@ p {
 				'homeurl' => parse_url( get_home_url(), PHP_URL_HOST ),
 			) );
 			foreach ( $domains_to_check as $domain ) {
-				$result = Jetpack_Data::is_usable_domain( $domain );
+				$result = self::connection()->is_usable_domain( $domain );
 				if ( is_wp_error( $result ) ) {
 					return $result;
 				}
@@ -3510,8 +3529,9 @@ p {
 			// Upgrade: 1.1 -> 1.1.1
 			// Check and see if host can verify the Jetpack servers' SSL certificate
 			$args = array();
-			Jetpack_Client::_wp_remote_request(
-				Jetpack::fix_url_for_bad_hosts( Jetpack::api_url( 'test' ) ),
+			$connection = self::connection();
+			Client::_wp_remote_request(
+				Jetpack::fix_url_for_bad_hosts( $connection->api_url( 'test' ) ),
 				$args,
 				true
 			);
@@ -3596,12 +3616,43 @@ p {
 		}
 	}
 
-	function add_remote_request_handlers() {
-		add_action( 'wp_ajax_nopriv_jetpack_upload_file', array( $this, 'remote_request_handlers' ) );
-		add_action( 'wp_ajax_nopriv_jetpack_update_file', array( $this, 'remote_request_handlers' ) );
+	/**
+	 * Register the remote file upload request handlers, if needed.
+	 *
+	 * @access public
+	 */
+	public function add_remote_request_handlers() {
+		// Remote file uploads are allowed only via AJAX requests.
+		if ( ! is_admin() || ! Constants::get_constant( 'DOING_AJAX' ) ) {
+			return;
+		}
+
+		// Remote file uploads are allowed only for a set of specific AJAX actions.
+		$remote_request_actions = array(
+			'jetpack_upload_file',
+			'jetpack_update_file',
+		);
+
+		// phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! isset( $_POST['action'] ) || ! in_array( $_POST['action'], $remote_request_actions, true ) ) {
+			return;
+		}
+
+		// Require Jetpack authentication for the remote file upload AJAX requests.
+		$this->connection_manager->require_jetpack_authentication();
+
+		// Register the remote file upload AJAX handlers.
+		foreach ( $remote_request_actions as $action ) {
+			add_action( "wp_ajax_nopriv_{$action}", array( $this, 'remote_request_handlers' ) );
+		}
 	}
 
-	function remote_request_handlers() {
+	/**
+	 * Handler for Jetpack remote file uploads.
+	 *
+	 * @access public
+	 */
+	public function remote_request_handlers() {
 		$action = current_filter();
 
 		switch ( current_filter() ) {
@@ -3852,7 +3903,7 @@ p {
 		if ( ! wp_style_is( 'jetpack-dops-style' ) ) {
 			wp_register_style(
 				'jetpack-dops-style',
-				plugins_url( '_inc/build/admin.dops-style.css', JETPACK__PLUGIN_FILE ),
+				plugins_url( '_inc/build/admin.css', JETPACK__PLUGIN_FILE ),
 				array(),
 				JETPACK__VERSION
 			);
@@ -3931,9 +3982,10 @@ p {
 		}
 
 		if ( isset( $_GET['connect_url_redirect'] ) ) {
+			// @todo: Add validation against a known whitelist
+			$from = ! empty( $_GET['from'] ) ? $_GET['from'] : 'iframe';
 			// User clicked in the iframe to link their accounts
 			if ( ! Jetpack::is_user_connected() ) {
-				$from = ! empty( $_GET['from'] ) ? $_GET['from'] : 'iframe';
 				$redirect = ! empty( $_GET['redirect_after_auth'] ) ? $_GET['redirect_after_auth'] : false;
 
 				add_filter( 'allowed_redirect_hosts', array( &$this, 'allow_wpcom_environments' ) );
@@ -3950,7 +4002,7 @@ p {
 					wp_safe_redirect( Jetpack::admin_url() );
 					exit;
 				} else {
-					$connect_url = $this->build_connect_url( true, false, 'iframe' );
+					$connect_url = $this->build_connect_url( true, false, $from );
 					$connect_url .= '&already_authorized=true';
 					wp_redirect( $connect_url );
 					exit;
@@ -3984,19 +4036,30 @@ p {
 					$error = $registered->get_error_code();
 					Jetpack::state( 'error', $error );
 					Jetpack::state( 'error', $registered->get_error_message() );
-					JetpackTracking::record_user_event( 'jpc_register_fail', array(
-						'error_code' => $error,
-						'error_message' => $registered->get_error_message()
-					) );
+
+					/**
+					 * Jetpack registration Error.
+					 *
+					 * @since 7.5.0
+					 *
+					 * @param string|int $error The error code.
+					 * @param \WP_Error $registered The error object.
+					 */
+					do_action( 'jetpack_connection_register_fail', $error, $registered );
 					break;
 				}
 
 				$from = isset( $_GET['from'] ) ? $_GET['from'] : false;
 				$redirect = isset( $_GET['redirect'] ) ? $_GET['redirect'] : false;
 
-				JetpackTracking::record_user_event( 'jpc_register_success', array(
-					'from' => $from
-				) );
+				/**
+				 * Jetpack registration Success.
+				 *
+				 * @since 7.5.0
+				 *
+				 * @param string $from 'from' GET parameter;
+				 */
+				do_action( 'jetpack_connection_register_success', $from );
 
 				$url = $this->build_connect_url( true, $redirect, $from );
 
@@ -4077,7 +4140,7 @@ p {
 				$redirect = isset( $_GET['redirect'] ) ? $_GET['redirect'] : '';
 				check_admin_referer( 'jetpack-unlink' );
 				Jetpack::log( 'unlink' );
-				$this->unlink_user();
+				Connection_Manager::disconnect_user();
 				Jetpack::state( 'message', 'unlinked' );
 				if ( 'sub-unlink' == $redirect ) {
 					wp_safe_redirect( admin_url() );
@@ -4096,8 +4159,8 @@ p {
 						$url = add_query_arg( 'onboarding', $token, $url );
 					}
 
-					$calypso_env = ! empty( $_GET[ 'calypso_env' ] ) ? $_GET[ 'calypso_env' ] : false;
-					if ( $calypso_env ) {
+					$calypso_env = $this->get_calypso_env();
+					if ( ! empty( $calypso_env ) ) {
 						$url = add_query_arg( 'calypso_env', $calypso_env, $url );
 					}
 
@@ -4279,6 +4342,35 @@ p {
 	}
 
 	/**
+	 * We can't always respond to a signed XML-RPC request with a
+	 * helpful error message. In some circumstances, doing so could
+	 * leak information.
+	 *
+	 * Instead, track that the error occurred via a Jetpack_Option,
+	 * and send that data back in the heartbeat.
+	 * All this does is increment a number, but it's enough to find
+	 * trends.
+	 *
+	 * @param WP_Error $xmlrpc_error The error produced during
+	 *                               signature validation.
+	 */
+	function track_xmlrpc_error( $xmlrpc_error ) {
+		$code = is_wp_error( $xmlrpc_error )
+			? $xmlrpc_error->get_error_code()
+			: 'should-not-happen';
+
+		$xmlrpc_errors = Jetpack_Options::get_option( 'xmlrpc_errors', array() );
+		if ( isset( $xmlrpc_errors[ $code ] ) && $xmlrpc_errors[ $code ] ) {
+			// No need to update the option if we already have
+			// this code stored.
+			return;
+		}
+		$xmlrpc_errors[ $code ] = true;
+
+		Jetpack_Options::update_option( 'xmlrpc_errors', $xmlrpc_errors, false );
+	}
+
+	/**
 	 * Record a stat for later output.  This will only currently output in the admin_footer.
 	 */
 	function stat( $group, $detail ) {
@@ -4352,51 +4444,77 @@ p {
 		return $url;
 	}
 
-	static function translate_current_user_to_role() {
-		foreach ( self::$capability_translations as $role => $cap ) {
-			if ( current_user_can( $role ) || current_user_can( $cap ) ) {
-				return $role;
-			}
-		}
+	/**
+	 * Get the role of the current user.
+	 *
+	 * @deprecated 7.6 Use Automattic\Jetpack\Roles::translate_current_user_to_role() instead.
+	 *
+	 * @access public
+	 * @static
+	 *
+	 * @return string|boolean Current user's role, false if not enough capabilities for any of the roles.
+	 */
+	public static function translate_current_user_to_role() {
+		_deprecated_function( __METHOD__, 'jetpack-7.6.0' );
 
-		return false;
+		$roles = new Roles();
+		return $roles->translate_current_user_to_role();
 	}
 
-	static function translate_user_to_role( $user ) {
-		foreach ( self::$capability_translations as $role => $cap ) {
-			if ( user_can( $user, $role ) || user_can( $user, $cap ) ) {
-				return $role;
-			}
-		}
+	/**
+	 * Get the role of a particular user.
+	 *
+	 * @deprecated 7.6 Use Automattic\Jetpack\Roles::translate_user_to_role() instead.
+	 *
+	 * @access public
+	 * @static
+	 *
+	 * @param \WP_User $user User object.
+	 * @return string|boolean User's role, false if not enough capabilities for any of the roles.
+	 */
+	public static function translate_user_to_role( $user ) {
+		_deprecated_function( __METHOD__, 'jetpack-7.6.0' );
 
-		return false;
-    }
-
-	static function translate_role_to_cap( $role ) {
-		if ( ! isset( self::$capability_translations[$role] ) ) {
-			return false;
-		}
-
-		return self::$capability_translations[$role];
+		$roles = new Roles();
+		return $roles->translate_user_to_role( $user );
 	}
 
-	static function sign_role( $role, $user_id = null ) {
-		if ( empty( $user_id ) ) {
-			$user_id = (int) get_current_user_id();
-		}
+	/**
+	 * Get the minimum capability for a role.
+	 *
+	 * @deprecated 7.6 Use Automattic\Jetpack\Roles::translate_role_to_cap() instead.
+	 *
+	 * @access public
+	 * @static
+	 *
+	 * @param string $role Role name.
+	 * @return string|boolean Capability, false if role isn't mapped to any capabilities.
+	 */
+	public static function translate_role_to_cap( $role ) {
+		_deprecated_function( __METHOD__, 'jetpack-7.6.0' );
 
-		if ( ! $user_id  ) {
-			return false;
-		}
-
-		$token = Jetpack_Data::get_access_token();
-		if ( ! $token || is_wp_error( $token ) ) {
-			return false;
-		}
-
-		return $role . ':' . hash_hmac( 'md5', "{$role}|{$user_id}", $token->secret );
+		$roles = new Roles();
+		return $roles->translate_role_to_cap( $role );
 	}
 
+	/**
+	 * Sign a user role with the master access token.
+	 * If not specified, will default to the current user.
+	 *
+	 * @deprecated since 7.7
+	 * @see Automattic\Jetpack\Connection\Manager::sign_role()
+	 *
+	 * @access public
+	 * @static
+	 *
+	 * @param string $role    User role.
+	 * @param int    $user_id ID of the user.
+	 * @return string Signed user role.
+	 */
+	public static function sign_role( $role, $user_id = null ) {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::sign_role' );
+		return self::connection()->sign_role( $role, $user_id );
+	}
 
 	/**
 	 * Builds a URL to the Jetpack connection auth page
@@ -4413,9 +4531,9 @@ p {
 	 */
 	function build_connect_url( $raw = false, $redirect = false, $from = false, $register = false ) {
 		$site_id = Jetpack_Options::get_option( 'id' );
-		$token = Jetpack_Options::get_option( 'blog_token' );
+		$blog_token = Jetpack_Data::get_access_token();
 
-		if ( $register || ! $token || ! $site_id ) {
+		if ( $register || ! $blog_token || ! $site_id ) {
 			$url = Jetpack::nonce_url_no_esc( Jetpack::admin_url( 'action=register' ), 'jetpack-register' );
 
 			if ( ! empty( $redirect ) ) {
@@ -4437,85 +4555,19 @@ p {
 			if ( ! $last_connect_url_check || ( time() - $last_connect_url_check ) > MINUTE_IN_SECONDS ) {
 				Jetpack_Options::update_raw_option( 'jetpack_last_connect_url_check', time() );
 
-				$response = Jetpack_Client::wpcom_json_api_request_as_blog(
+				$response = Client::wpcom_json_api_request_as_blog(
 					sprintf( '/sites/%d', $site_id ) .'?force=wpcom',
 					'1.1'
 				);
 
 				if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+
 					// Generating a register URL instead to refresh the existing token
 					return $this->build_connect_url( $raw, $redirect, $from, true );
 				}
 			}
 
-			if ( defined( 'JETPACK__GLOTPRESS_LOCALES_PATH' ) && include_once JETPACK__GLOTPRESS_LOCALES_PATH ) {
-				$gp_locale = GP_Locales::by_field( 'wp_locale', get_locale() );
-			}
-
-			$role = self::translate_current_user_to_role();
-			$signed_role = self::sign_role( $role );
-
-			$user = wp_get_current_user();
-
-			$jetpack_admin_page = esc_url_raw( admin_url( 'admin.php?page=jetpack' ) );
-			$redirect = $redirect
-				? wp_validate_redirect( esc_url_raw( $redirect ), $jetpack_admin_page )
-				: $jetpack_admin_page;
-
-			if( isset( $_REQUEST['is_multisite'] ) ) {
-				$redirect = Jetpack_Network::init()->get_url( 'network_admin_page' );
-			}
-
-			$secrets = Jetpack::generate_secrets( 'authorize', false, 2 * HOUR_IN_SECONDS );
-
-			/**
-			 * Filter the type of authorization.
-			 * 'calypso' completes authorization on wordpress.com/jetpack/connect
-			 * while 'jetpack' ( or any other value ) completes the authorization at jetpack.wordpress.com.
-			 *
-			 * @since 4.3.3
-			 *
-			 * @param string $auth_type Defaults to 'calypso', can also be 'jetpack'.
-			 */
-			$auth_type = apply_filters( 'jetpack_auth_type', 'calypso' );
-
-			$tracks_identity = jetpack_tracks_get_identity( get_current_user_id() );
-
-			$args = urlencode_deep(
-				array(
-					'response_type' => 'code',
-					'client_id'     => Jetpack_Options::get_option( 'id' ),
-					'redirect_uri'  => add_query_arg(
-						array(
-							'action'   => 'authorize',
-							'_wpnonce' => wp_create_nonce( "jetpack-authorize_{$role}_{$redirect}" ),
-							'redirect' => urlencode( $redirect ),
-						),
-						esc_url( admin_url( 'admin.php?page=jetpack' ) )
-					),
-					'state'         => $user->ID,
-					'scope'         => $signed_role,
-					'user_email'    => $user->user_email,
-					'user_login'    => $user->user_login,
-					'is_active'     => Jetpack::is_active(),
-					'jp_version'    => JETPACK__VERSION,
-					'auth_type'     => $auth_type,
-					'secret'        => $secrets['secret_1'],
-					'locale'        => ( isset( $gp_locale ) && isset( $gp_locale->slug ) ) ? $gp_locale->slug : '',
-					'blogname'      => get_option( 'blogname' ),
-					'site_url'      => site_url(),
-					'home_url'      => home_url(),
-					'site_icon'     => get_site_icon_url(),
-					'site_lang'     => get_locale(),
-					'_ui'           => $tracks_identity['_ui'],
-					'_ut'           => $tracks_identity['_ut'],
-					'site_created'  => Jetpack::get_assumed_site_creation_date(),
-				)
-			);
-
-			self::apply_activation_source_to_args( $args );
-
-			$url = add_query_arg( $args, Jetpack::api_url( 'authorize' ) );
+			$url = $this->build_authorize_url( $redirect );
 		}
 
 		if ( $from ) {
@@ -4529,11 +4581,91 @@ p {
 		// Get affiliate code and add it to the URL
 		$url = Jetpack_Affiliate::init()->add_code_as_query_arg( $url );
 
-		if ( isset( $_GET['calypso_env'] ) ) {
-			$url = add_query_arg( 'calypso_env', sanitize_key( $_GET['calypso_env'] ), $url );
+		$calypso_env = $this->get_calypso_env();
+
+		if ( ! empty( $calypso_env ) ) {
+			$url = add_query_arg( 'calypso_env', $calypso_env, $url );
 		}
 
-		return $raw ? $url : esc_url( $url );
+		return $raw ? esc_url_raw( $url ) : esc_url( $url );
+	}
+
+	public static function build_authorize_url( $redirect = false, $iframe = false ) {
+		if ( defined( 'JETPACK__GLOTPRESS_LOCALES_PATH' ) && include_once JETPACK__GLOTPRESS_LOCALES_PATH ) {
+			$gp_locale = GP_Locales::by_field( 'wp_locale', get_locale() );
+		}
+
+		$roles       = new Roles();
+		$role        = $roles->translate_current_user_to_role();
+		$signed_role = self::connection()->sign_role( $role );
+
+		$user = wp_get_current_user();
+
+		$jetpack_admin_page = esc_url_raw( admin_url( 'admin.php?page=jetpack' ) );
+		$redirect = $redirect
+			? wp_validate_redirect( esc_url_raw( $redirect ), $jetpack_admin_page )
+			: $jetpack_admin_page;
+
+		if( isset( $_REQUEST['is_multisite'] ) ) {
+			$redirect = Jetpack_Network::init()->get_url( 'network_admin_page' );
+		}
+
+		$secrets = Jetpack::generate_secrets( 'authorize', false, 2 * HOUR_IN_SECONDS );
+
+		/**
+		 * Filter the type of authorization.
+		 * 'calypso' completes authorization on wordpress.com/jetpack/connect
+		 * while 'jetpack' ( or any other value ) completes the authorization at jetpack.wordpress.com.
+		 *
+		 * @since 4.3.3
+		 *
+		 * @param string $auth_type Defaults to 'calypso', can also be 'jetpack'.
+		 */
+		$auth_type = apply_filters( 'jetpack_auth_type', 'calypso' );
+
+
+		$tracks = new Tracking();
+		$tracks_identity = $tracks->tracks_get_identity( get_current_user_id() );
+
+		$args = urlencode_deep(
+			array(
+				'response_type' => 'code',
+				'client_id'     => Jetpack_Options::get_option( 'id' ),
+				'redirect_uri'  => add_query_arg(
+					array(
+						'action'   => 'authorize',
+						'_wpnonce' => wp_create_nonce( "jetpack-authorize_{$role}_{$redirect}" ),
+						'redirect' => urlencode( $redirect ),
+					),
+					esc_url( admin_url( 'admin.php?page=jetpack' ) )
+				),
+				'state'         => $user->ID,
+				'scope'         => $signed_role,
+				'user_email'    => $user->user_email,
+				'user_login'    => $user->user_login,
+				'is_active'     => Jetpack::is_active(),
+				'jp_version'    => JETPACK__VERSION,
+				'auth_type'     => $auth_type,
+				'secret'        => $secrets['secret_1'],
+				'locale'        => ( isset( $gp_locale ) && isset( $gp_locale->slug ) ) ? $gp_locale->slug : '',
+				'blogname'      => get_option( 'blogname' ),
+				'site_url'      => site_url(),
+				'home_url'      => home_url(),
+				'site_icon'     => get_site_icon_url(),
+				'site_lang'     => get_locale(),
+				'_ui'           => $tracks_identity['_ui'],
+				'_ut'           => $tracks_identity['_ut'],
+				'site_created'  => Jetpack::get_assumed_site_creation_date(),
+			)
+		);
+
+		self::apply_activation_source_to_args( $args );
+
+		$connection = self::connection();
+
+		$api_url = $iframe ? $connection->api_url( 'authorize_iframe' ) : $connection->api_url( 'authorize' );
+
+		return add_query_arg( $args, $api_url );
 	}
 
 	/**
@@ -4617,21 +4749,6 @@ p {
 					wp_safe_redirect( admin_url() . 'plugins.php?deactivate=true&plugin_status=all&paged=1&s=' );
 				}
 				break;
-			case 'jetpack-protect-multisite-opt-out':
-
-				if ( check_admin_referer( 'jetpack_protect_multisite_banner_opt_out' ) ) {
-					// Don't show the banner again
-
-					update_site_option( 'jetpack_dismissed_protect_multisite_banner', true );
-					// redirect back to the page that had the notice
-					if ( wp_get_referer() ) {
-						wp_safe_redirect( wp_get_referer() );
-					} else {
-						// Take me to Jetpack
-						wp_safe_redirect( admin_url( 'admin.php?page=jetpack' ) );
-					}
-				}
-				break;
 		}
 	}
 
@@ -4656,10 +4773,13 @@ p {
 	/**
 	 * Returns the requested Jetpack API URL
 	 *
+	 * @deprecated since 7.7
 	 * @return string
 	 */
 	public static function api_url( $relative_url ) {
-		return trailingslashit( JETPACK__API_BASE . $relative_url  ) . JETPACK__API_VERSION . '/';
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::api_url' );
+		$connection = self::connection();
+		return $connection->api_url( $relative_url );
 	}
 
 	/**
@@ -4680,6 +4800,52 @@ p {
 
 		// we now return the unmodified SSL URL by default, as a security precaution
 		return $url;
+	}
+
+	public static function verify_onboarding_token( $token_data, $token, $request_data ) {
+		// Default to a blog token.
+		$token_type = 'blog';
+
+		// Let's see if this is onboarding. In such case, use user token type and the provided user id.
+		if ( isset( $request_data ) || ! empty( $_GET['onboarding'] ) ) {
+			if ( ! empty( $_GET['onboarding'] ) ) {
+				$jpo = $_GET;
+			} else {
+				$jpo = json_decode( $request_data, true );
+			}
+
+			$jpo_token = ! empty( $jpo['onboarding']['token'] ) ? $jpo['onboarding']['token'] : null;
+			$jpo_user = ! empty( $jpo['onboarding']['jpUser'] ) ? $jpo['onboarding']['jpUser'] : null;
+
+			if (
+				isset( $jpo_user )
+				&& isset( $jpo_token )
+				&& is_email( $jpo_user )
+				&& ctype_alnum( $jpo_token )
+				&& isset( $_GET['rest_route'] )
+				&& self::validate_onboarding_token_action(
+					$jpo_token,
+					$_GET['rest_route']
+				)
+			) {
+				$jp_user = get_user_by( 'email', $jpo_user );
+				if ( is_a( $jp_user, 'WP_User' ) ) {
+					wp_set_current_user( $jp_user->ID );
+					$user_can = is_multisite()
+						? current_user_can_for_blog( get_current_blog_id(), 'manage_options' )
+						: current_user_can( 'manage_options' );
+					if ( $user_can ) {
+						$token_type = 'user';
+						$token->external_user_id = $jp_user->ID;
+					}
+				}
+			}
+
+			$token_data['type']    = $token_type;
+			$token_data['user_id'] = $token->external_user_id;
+		}
+
+		return $token_data;
 	}
 
 	/**
@@ -4841,6 +5007,10 @@ p {
 		return untrailingslashit( $base ) . '/xmlrpc.php';
 	}
 
+	public static function connection() {
+		return self::init()->connection_manager;
+	}
+
 	/**
 	 * Creates two secret tokens and the end of life timestamp for them.
 	 *
@@ -4850,55 +5020,35 @@ p {
 	 * @return array
 	 */
 	public static function generate_secrets( $action, $user_id = false, $exp = 600 ) {
-		if ( ! $user_id ) {
+		if ( false === $user_id ) {
 			$user_id = get_current_user_id();
 		}
 
-		$secret_name  = 'jetpack_' . $action . '_' . $user_id;
-		$secrets      = Jetpack_Options::get_raw_option( 'jetpack_secrets', array() );
-
-		if (
-			isset( $secrets[ $secret_name ] ) &&
-			$secrets[ $secret_name ]['exp'] > time()
-		) {
-			return $secrets[ $secret_name ];
-		}
-
-		$secret_value = array(
-			'secret_1'  => wp_generate_password( 32, false ),
-			'secret_2'  => wp_generate_password( 32, false ),
-			'exp'       => time() + $exp,
-		);
-
-		$secrets[ $secret_name ] = $secret_value;
-
-		Jetpack_Options::update_raw_option( 'jetpack_secrets', $secrets );
-		return $secrets[ $secret_name ];
+		return self::connection()->generate_secrets( $action, $user_id, $exp );
 	}
 
 	public static function get_secrets( $action, $user_id ) {
-		$secret_name = 'jetpack_' . $action . '_' . $user_id;
-		$secrets = Jetpack_Options::get_raw_option( 'jetpack_secrets', array() );
+		$secrets = self::connection()->get_secrets( $action, $user_id );
 
-		if ( ! isset( $secrets[ $secret_name ] ) ) {
+		if ( Connection_Manager::SECRETS_MISSING === $secrets ) {
 			return new WP_Error( 'verify_secrets_missing', 'Verification secrets not found' );
 		}
 
-		if ( $secrets[ $secret_name ]['exp'] < time() ) {
-			self::delete_secrets( $action, $user_id );
+		if ( Connection_Manager::SECRETS_EXPIRED === $secrets ) {
 			return new WP_Error( 'verify_secrets_expired', 'Verification took too long' );
 		}
 
-		return $secrets[ $secret_name ];
+		return $secrets;
 	}
 
+	/**
+	 * @deprecated 7.5 Use Connection_Manager instead.
+	 *
+	 * @param $action
+	 * @param $user_id
+	 */
 	public static function delete_secrets( $action, $user_id ) {
-		$secret_name = 'jetpack_' . $action . '_' . $user_id;
-		$secrets = Jetpack_Options::get_raw_option( 'jetpack_secrets', array() );
-		if ( isset( $secrets[ $secret_name ] ) ) {
-			unset( $secrets[ $secret_name ] );
-			Jetpack_Options::update_raw_option( 'jetpack_secrets', $secrets );
-		}
+		return self::connection()->delete_secrets( $action, $user_id );
 	}
 
 	/**
@@ -4947,161 +5097,56 @@ p {
 		return $timeout;
 	}
 
-
 	/**
 	 * Takes the response from the Jetpack register new site endpoint and
 	 * verifies it worked properly.
 	 *
 	 * @since 2.6
-	 * @return string|Jetpack_Error A JSON object on success or Jetpack_Error on failures
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::validate_remote_register_response()
 	 **/
-	public function validate_remote_register_response( $response ) {
-	  if ( is_wp_error( $response ) ) {
-			return new Jetpack_Error( 'register_http_request_failed', $response->get_error_message() );
-		}
-
-		$code   = wp_remote_retrieve_response_code( $response );
-		$entity = wp_remote_retrieve_body( $response );
-		if ( $entity )
-			$registration_response = json_decode( $entity );
-		else
-			$registration_response = false;
-
-		$code_type = intval( $code / 100 );
-		if ( 5 == $code_type ) {
-			return new Jetpack_Error( 'wpcom_5??', sprintf( __( 'Error Details: %s', 'jetpack' ), $code ), $code );
-		} elseif ( 408 == $code ) {
-			return new Jetpack_Error( 'wpcom_408', sprintf( __( 'Error Details: %s', 'jetpack' ), $code ), $code );
-		} elseif ( ! empty( $registration_response->error ) ) {
-			if ( 'xml_rpc-32700' == $registration_response->error && ! function_exists( 'xml_parser_create' ) ) {
-				$error_description = __( "PHP's XML extension is not available. Jetpack requires the XML extension to communicate with WordPress.com. Please contact your hosting provider to enable PHP's XML extension.", 'jetpack' );
-			} else {
-				$error_description = isset( $registration_response->error_description ) ? sprintf( __( 'Error Details: %s', 'jetpack' ), (string) $registration_response->error_description ) : '';
-			}
-
-			return new Jetpack_Error( (string) $registration_response->error, $error_description, $code );
-		} elseif ( 200 != $code ) {
-			return new Jetpack_Error( 'wpcom_bad_response', sprintf( __( 'Error Details: %s', 'jetpack' ), $code ), $code );
-		}
-
-		// Jetpack ID error block
-		if ( empty( $registration_response->jetpack_id ) ) {
-			return new Jetpack_Error( 'jetpack_id', sprintf( __( 'Error Details: Jetpack ID is empty. Do not publicly post this error message! %s', 'jetpack' ), $entity ), $entity );
-		} elseif ( ! is_scalar( $registration_response->jetpack_id ) ) {
-			return new Jetpack_Error( 'jetpack_id', sprintf( __( 'Error Details: Jetpack ID is not a scalar. Do not publicly post this error message! %s', 'jetpack' ) , $entity ), $entity );
-		} elseif ( preg_match( '/[^0-9]/', $registration_response->jetpack_id ) ) {
-			return new Jetpack_Error( 'jetpack_id', sprintf( __( 'Error Details: Jetpack ID begins with a numeral. Do not publicly post this error message! %s', 'jetpack' ) , $entity ), $entity );
-		}
-
-	    return $registration_response;
+	public function validate_remote_register_response() {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::validate_remote_register_response' );
 	}
+
 	/**
 	 * @return bool|WP_Error
 	 */
 	public static function register() {
-		JetpackTracking::record_user_event( 'jpc_register_begin' );
-		add_action( 'pre_update_jetpack_option_register', array( 'Jetpack_Options', 'delete_option' ) );
-		$secrets = Jetpack::generate_secrets( 'register' );
+		$tracking = new Tracking();
+		$tracking->record_user_event( 'jpc_register_begin' );
 
-		if (
-			empty( $secrets['secret_1'] ) ||
-			empty( $secrets['secret_2'] ) ||
-			empty( $secrets['exp'] )
-		) {
-			return new Jetpack_Error( 'missing_secrets' );
+		add_filter( 'jetpack_register_request_body', array( __CLASS__, 'filter_register_request_body' ) );
+
+		$connection = self::connection();
+		$registration = $connection->register();
+
+		remove_filter( 'jetpack_register_request_body', array( __CLASS__, 'filter_register_request_body' ) );
+
+		if ( ! $registration || is_wp_error( $registration ) ) {
+			return $registration;
 		}
-
-		// better to try (and fail) to set a higher timeout than this system
-		// supports than to have register fail for more users than it should
-		$timeout = Jetpack::set_min_time_limit( 60 ) / 2;
-
-		$gmt_offset = get_option( 'gmt_offset' );
-		if ( ! $gmt_offset ) {
-			$gmt_offset = 0;
-		}
-
-		$stats_options = get_option( 'stats_options' );
-		$stats_id = isset($stats_options['blog_id']) ? $stats_options['blog_id'] : null;
-
-		$tracks_identity = jetpack_tracks_get_identity( get_current_user_id() );
-
-		$args = array(
-			'method'  => 'POST',
-			'body'    => array(
-				'siteurl'         => site_url(),
-				'home'            => home_url(),
-				'gmt_offset'      => $gmt_offset,
-				'timezone_string' => (string) get_option( 'timezone_string' ),
-				'site_name'       => (string) get_option( 'blogname' ),
-				'secret_1'        => $secrets['secret_1'],
-				'secret_2'        => $secrets['secret_2'],
-				'site_lang'       => get_locale(),
-				'timeout'         => $timeout,
-				'stats_id'        => $stats_id,
-				'state'           => get_current_user_id(),
-				'_ui'             => $tracks_identity['_ui'],
-				'_ut'             => $tracks_identity['_ut'],
-				'site_created'    => Jetpack::get_assumed_site_creation_date(),
-				'jetpack_version' => JETPACK__VERSION
-			),
-			'headers' => array(
-				'Accept' => 'application/json',
-			),
-			'timeout' => $timeout,
-		);
-
-		self::apply_activation_source_to_args( $args['body'] );
-
-		$response = Jetpack_Client::_wp_remote_request( Jetpack::fix_url_for_bad_hosts( Jetpack::api_url( 'register' ) ), $args, true );
-
-		// Make sure the response is valid and does not contain any Jetpack errors
-		$registration_details = Jetpack::init()->validate_remote_register_response( $response );
-		if ( is_wp_error( $registration_details ) ) {
-			return $registration_details;
-		} elseif ( ! $registration_details ) {
-			return new Jetpack_Error( 'unknown_error', __( 'Unknown error registering your Jetpack site', 'jetpack' ), wp_remote_retrieve_response_code( $response ) );
-		}
-
-		if ( empty( $registration_details->jetpack_secret ) || ! is_string( $registration_details->jetpack_secret ) ) {
-			return new Jetpack_Error( 'jetpack_secret', '', wp_remote_retrieve_response_code( $response ) );
-		}
-
-		if ( isset( $registration_details->jetpack_public ) ) {
-			$jetpack_public = (int) $registration_details->jetpack_public;
-		} else {
-			$jetpack_public = false;
-		}
-
-		Jetpack_Options::update_options(
-			array(
-				'id'         => (int)    $registration_details->jetpack_id,
-				'blog_token' => (string) $registration_details->jetpack_secret,
-				'public'     => $jetpack_public,
-			)
-		);
-
-		/**
-		 * Fires when a site is registered on WordPress.com.
-		 *
-		 * @since 3.7.0
-		 *
-		 * @param int $json->jetpack_id Jetpack Blog ID.
-		 * @param string $json->jetpack_secret Jetpack Blog Token.
-		 * @param int|bool $jetpack_public Is the site public.
-		 */
-		do_action( 'jetpack_site_registered', $registration_details->jetpack_id, $registration_details->jetpack_secret, $jetpack_public );
-
-		// Initialize Jump Start for the first and only time.
-		if ( ! Jetpack_Options::get_option( 'jumpstart' ) ) {
-			Jetpack_Options::update_option( 'jumpstart', 'new_connection' );
-
-			$jetpack = Jetpack::init();
-
-			$jetpack->stat( 'jumpstart', 'unique-views' );
-			$jetpack->do_stats( 'server_side' );
-		};
 
 		return true;
+	}
+
+	/**
+	 * Filters the registration request body to include tracking properties.
+	 *
+	 * @param Array $properties
+	 * @return Array amended properties.
+	 */
+	public static function filter_register_request_body( $properties ) {
+		$tracking = new Tracking();
+		$tracks_identity = $tracking->tracks_get_identity( get_current_user_id() );
+
+		return array_merge(
+			$properties,
+			array(
+				'_ui' => $tracks_identity['_ui'],
+				'_ut' => $tracks_identity['_ut'],
+			)
+		);
 	}
 
 	/**
@@ -5127,177 +5172,65 @@ p {
 /* Client Server API */
 
 	/**
-	 * Loads the Jetpack XML-RPC client
+	 * Loads the Jetpack XML-RPC client.
+	 * No longer necessary, as the XML-RPC client will be automagically loaded.
+	 *
+	 * @deprecated since 7.7.0
 	 */
 	public static function load_xml_rpc_client() {
-		require_once ABSPATH . WPINC . '/class-IXR.php';
-		require_once JETPACK__PLUGIN_DIR . 'class.jetpack-ixr-client.php';
+		// Removed the php notice that shows up in order to give time to Akismet and VaultPress time to update.
+		// _deprecated_function( __METHOD__, 'jetpack-7.7' );
 	}
 
 	/**
 	 * Resets the saved authentication state in between testing requests.
 	 */
 	public function reset_saved_auth_state() {
-		$this->xmlrpc_verification = null;
 		$this->rest_authentication_status = null;
-	}
-
-	function verify_xml_rpc_signature() {
-		if ( $this->xmlrpc_verification ) {
-			return $this->xmlrpc_verification;
-		}
-
-		// It's not for us
-		if ( ! isset( $_GET['token'] ) || empty( $_GET['signature'] ) ) {
-			return false;
-		}
-
-		@list( $token_key, $version, $user_id ) = explode( ':', $_GET['token'] );
-		if (
-			empty( $token_key )
-		||
-			empty( $version ) || strval( JETPACK__API_VERSION ) !== $version
-		) {
-			return false;
-		}
-
-		if ( '0' === $user_id ) {
-			$token_type = 'blog';
-			$user_id = 0;
-		} else {
-			$token_type = 'user';
-			if ( empty( $user_id ) || ! ctype_digit( $user_id ) ) {
-				return false;
-			}
-			$user_id = (int) $user_id;
-
-			$user = new WP_User( $user_id );
-			if ( ! $user || ! $user->exists() ) {
-				return false;
-			}
-		}
-
-		$token = Jetpack_Data::get_access_token( $user_id );
-		if ( ! $token ) {
-			return false;
-		}
-
-		$token_check = "$token_key.";
-		if ( ! hash_equals( substr( $token->secret, 0, strlen( $token_check ) ), $token_check ) ) {
-			return false;
-		}
-
-		require_once JETPACK__PLUGIN_DIR . 'class.jetpack-signature.php';
-
-		$jetpack_signature = new Jetpack_Signature( $token->secret, (int) Jetpack_Options::get_option( 'time_diff' ) );
-		if ( isset( $_POST['_jetpack_is_multipart'] ) ) {
-			$post_data   = $_POST;
-			$file_hashes = array();
-			foreach ( $post_data as $post_data_key => $post_data_value ) {
-				if ( 0 !== strpos( $post_data_key, '_jetpack_file_hmac_' ) ) {
-					continue;
-				}
-				$post_data_key = substr( $post_data_key, strlen( '_jetpack_file_hmac_' ) );
-				$file_hashes[$post_data_key] = $post_data_value;
-			}
-
-			foreach ( $file_hashes as $post_data_key => $post_data_value ) {
-				unset( $post_data["_jetpack_file_hmac_{$post_data_key}"] );
-				$post_data[$post_data_key] = $post_data_value;
-			}
-
-			ksort( $post_data );
-
-			$body = http_build_query( stripslashes_deep( $post_data ) );
-		} elseif ( is_null( $this->HTTP_RAW_POST_DATA ) ) {
-			$body = file_get_contents( 'php://input' );
-		} else {
-			$body = null;
-		}
-
-		$signature = $jetpack_signature->sign_current_request(
-			array( 'body' => is_null( $body ) ? $this->HTTP_RAW_POST_DATA : $body, )
-		);
-
-		if ( ! $signature ) {
-			return false;
-		} else if ( is_wp_error( $signature ) ) {
-			return $signature;
-		} else if ( ! hash_equals( $signature, $_GET['signature'] ) ) {
-			return false;
-		}
-
-		$timestamp = (int) $_GET['timestamp'];
-		$nonce     = stripslashes( (string) $_GET['nonce'] );
-
-		if ( ! $this->add_nonce( $timestamp, $nonce ) ) {
-			return false;
-		}
-
-		// Let's see if this is onboarding. In such case, use user token type and the provided user id.
-		if ( isset( $this->HTTP_RAW_POST_DATA ) || ! empty( $_GET['onboarding'] ) ) {
-			if ( ! empty( $_GET['onboarding'] ) ) {
-				$jpo = $_GET;
-			} else {
-				$jpo = json_decode( $this->HTTP_RAW_POST_DATA, true );
-			}
-
-			$jpo_token = ! empty( $jpo['onboarding']['token'] ) ? $jpo['onboarding']['token'] : null;
-			$jpo_user = ! empty( $jpo['onboarding']['jpUser'] ) ? $jpo['onboarding']['jpUser'] : null;
-
-			if (
-				isset( $jpo_user ) && isset( $jpo_token ) &&
-				is_email( $jpo_user ) && ctype_alnum( $jpo_token ) &&
-				isset( $_GET['rest_route'] ) &&
-				self::validate_onboarding_token_action( $jpo_token, $_GET['rest_route'] )
-			) {
-				$jpUser = get_user_by( 'email', $jpo_user );
-				if ( is_a( $jpUser, 'WP_User' ) ) {
-					wp_set_current_user( $jpUser->ID );
-					$user_can = is_multisite()
-						? current_user_can_for_blog( get_current_blog_id(), 'manage_options' )
-						: current_user_can( 'manage_options' );
-					if ( $user_can ) {
-						$token_type = 'user';
-						$token->external_user_id = $jpUser->ID;
-					}
-				}
-			}
-		}
-
-		$this->xmlrpc_verification = array(
-			'type'    => $token_type,
-			'user_id' => $token->external_user_id,
-		);
-
-		return $this->xmlrpc_verification;
+		$this->connection_manager->reset_saved_auth_state();
 	}
 
 	/**
-	 * Authenticates XML-RPC and other requests from the Jetpack Server
+	 * Verifies the signature of the current request.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::verify_xml_rpc_signature()
+	 *
+	 * @return false|array
 	 */
-	function authenticate_jetpack( $user, $username, $password ) {
-		if ( is_a( $user, 'WP_User' ) ) {
-			return $user;
-		}
+	public function verify_xml_rpc_signature() {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::verify_xml_rpc_signature' );
+		return self::connection()->verify_xml_rpc_signature();
+	}
 
-		$token_details = $this->verify_xml_rpc_signature();
+	/**
+	 * Verifies the signature of the current request.
+	 *
+	 * This function has side effects and should not be used. Instead,
+	 * use the memoized version `->verify_xml_rpc_signature()`.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::internal_verify_xml_rpc_signature()
+	 * @internal
+	 */
+	private function internal_verify_xml_rpc_signature() {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::internal_verify_xml_rpc_signature' );
+	}
 
-		if ( ! $token_details || is_wp_error( $token_details ) ) {
-			return $user;
-		}
-
-		if ( 'user' !== $token_details['type'] ) {
-			return $user;
-		}
-
-		if ( ! $token_details['user_id'] ) {
-			return $user;
-		}
-
-		nocache_headers();
-
-		return new WP_User( $token_details['user_id'] );
+	/**
+	 * Authenticates XML-RPC and other requests from the Jetpack Server.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::authenticate_jetpack()
+	 *
+	 * @param \WP_User|mixed $user     User object if authenticated.
+	 * @param string         $username Username.
+	 * @param string         $password Password string.
+	 * @return \WP_User|mixed Authenticated user or error.
+	 */
+	public function authenticate_jetpack( $user, $username, $password ) {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::authenticate_jetpack' );
+		return $this->connection_manager->authenticate_jetpack( $user, $username, $password );
 	}
 
 	// Authenticates requests from Jetpack server to WP REST API endpoints.
@@ -5351,12 +5284,7 @@ p {
 			return null;
 		}
 
-		$verified = $this->verify_xml_rpc_signature();
-
-		if ( is_wp_error( $verified ) ) {
-			$this->rest_authentication_status = $verified;
-			return null;
-		}
+		$verified = $this->connection_manager->verify_xml_rpc_signature();
 
 		if (
 			$verified &&
@@ -5391,141 +5319,88 @@ p {
 		return $this->rest_authentication_status;
 	}
 
-	function add_nonce( $timestamp, $nonce ) {
-		global $wpdb;
-		static $nonces_used_this_request = array();
-
-		if ( isset( $nonces_used_this_request["$timestamp:$nonce"] ) ) {
-			return $nonces_used_this_request["$timestamp:$nonce"];
-		}
-
-		// This should always have gone through Jetpack_Signature::sign_request() first to check $timestamp an $nonce
-		$timestamp = (int) $timestamp;
-		$nonce     = esc_sql( $nonce );
-
-		// Raw query so we can avoid races: add_option will also update
-		$show_errors = $wpdb->show_errors( false );
-
-		$old_nonce = $wpdb->get_row(
-			$wpdb->prepare( "SELECT * FROM `$wpdb->options` WHERE option_name = %s", "jetpack_nonce_{$timestamp}_{$nonce}" )
-		);
-
-		if ( is_null( $old_nonce ) ) {
-			$return = $wpdb->query(
-				$wpdb->prepare(
-					"INSERT INTO `$wpdb->options` (`option_name`, `option_value`, `autoload`) VALUES (%s, %s, %s)",
-					"jetpack_nonce_{$timestamp}_{$nonce}",
-					time(),
-					'no'
-				)
-			);
-		} else {
-			$return = false;
-		}
-
-		$wpdb->show_errors( $show_errors );
-
-		$nonces_used_this_request["$timestamp:$nonce"] = $return;
-
-		return $return;
+	/**
+	 * Add our nonce to this request.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::add_nonce()
+	 *
+	 * @param int    $timestamp Timestamp of the request.
+	 * @param string $nonce     Nonce string.
+	 */
+	public function add_nonce( $timestamp, $nonce ) {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::add_nonce' );
+		return $this->connection_manager->add_nonce( $timestamp, $nonce );
 	}
 
 	/**
 	 * In some setups, $HTTP_RAW_POST_DATA can be emptied during some IXR_Server paths since it is passed by reference to various methods.
 	 * Capture it here so we can verify the signature later.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::xmlrpc_methods()
+	 *
+	 * @param array $methods XMLRPC methods.
+	 * @return array XMLRPC methods, with the $HTTP_RAW_POST_DATA one.
 	 */
-	function xmlrpc_methods( $methods ) {
-		$this->HTTP_RAW_POST_DATA = $GLOBALS['HTTP_RAW_POST_DATA'];
-		return $methods;
+	public function xmlrpc_methods( $methods ) {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::xmlrpc_methods' );
+		return $this->connection_manager->xmlrpc_methods( $methods );
 	}
 
-	function public_xmlrpc_methods( $methods ) {
-		if ( array_key_exists( 'wp.getOptions', $methods ) ) {
-			$methods['wp.getOptions'] = array( $this, 'jetpack_getOptions' );
-		}
-		return $methods;
+	/**
+	 * Register additional public XMLRPC methods.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::public_xmlrpc_methods()
+	 *
+	 * @param array $methods Public XMLRPC methods.
+	 * @return array Public XMLRPC methods, with the getOptions one.
+	 */
+	public function public_xmlrpc_methods( $methods ) {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::public_xmlrpc_methods' );
+		return $this->connection_manager->public_xmlrpc_methods( $methods );
 	}
 
-	function jetpack_getOptions( $args ) {
-		global $wp_xmlrpc_server;
-
-		$wp_xmlrpc_server->escape( $args );
-
-		$username	= $args[1];
-		$password	= $args[2];
-
-		if ( !$user = $wp_xmlrpc_server->login($username, $password) ) {
-			return $wp_xmlrpc_server->error;
-		}
-
-		$options = array();
-		$user_data = $this->get_connected_user_data();
-		if ( is_array( $user_data ) ) {
-			$options['jetpack_user_id'] = array(
-				'desc'          => __( 'The WP.com user ID of the connected user', 'jetpack' ),
-				'readonly'      => true,
-				'value'         => $user_data['ID'],
-			);
-			$options['jetpack_user_login'] = array(
-				'desc'          => __( 'The WP.com username of the connected user', 'jetpack' ),
-				'readonly'      => true,
-				'value'         => $user_data['login'],
-			);
-			$options['jetpack_user_email'] = array(
-				'desc'          => __( 'The WP.com user email of the connected user', 'jetpack' ),
-				'readonly'      => true,
-				'value'         => $user_data['email'],
-			);
-			$options['jetpack_user_site_count'] = array(
-				'desc'          => __( 'The number of sites of the connected WP.com user', 'jetpack' ),
-				'readonly'      => true,
-				'value'         => $user_data['site_count'],
-			);
-		}
-		$wp_xmlrpc_server->blog_options = array_merge( $wp_xmlrpc_server->blog_options, $options );
-		$args = stripslashes_deep( $args );
-		return $wp_xmlrpc_server->wp_getOptions( $args );
+	/**
+	 * Handles a getOptions XMLRPC method call.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::jetpack_getOptions()
+	 *
+	 * @param array $args method call arguments.
+	 * @return array an amended XMLRPC server options array.
+	 */
+	public function jetpack_getOptions( $args ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::jetpack_getOptions' );
+		return $this->connection_manager->jetpack_getOptions( $args );
 	}
 
-	function xmlrpc_options( $options ) {
-		$jetpack_client_id = false;
-		if ( self::is_active() ) {
-			$jetpack_client_id = Jetpack_Options::get_option( 'id' );
-		}
-		$options['jetpack_version'] = array(
-				'desc'          => __( 'Jetpack Plugin Version', 'jetpack' ),
-				'readonly'      => true,
-				'value'         => JETPACK__VERSION,
-		);
-
-		$options['jetpack_client_id'] = array(
-				'desc'          => __( 'The Client ID/WP.com Blog ID of this site', 'jetpack' ),
-				'readonly'      => true,
-				'value'         => $jetpack_client_id,
-		);
-		return $options;
+	/**
+	 * Adds Jetpack-specific options to the output of the XMLRPC options method.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::xmlrpc_options()
+	 *
+	 * @param array $options Standard Core options.
+	 * @return array Amended options.
+	 */
+	public function xmlrpc_options( $options ) {
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::xmlrpc_options' );
+		return $this->connection_manager->xmlrpc_options( $options );
 	}
 
+	/**
+	 * Cleans nonces that were saved when calling ::add_nonce.
+	 *
+	 * @deprecated since 7.7.0
+	 * @see Automattic\Jetpack\Connection\Manager::clean_nonces()
+	 *
+	 * @param bool $all whether to clean even non-expired nonces.
+	 */
 	public static function clean_nonces( $all = false ) {
-		global $wpdb;
-
-		$sql = "DELETE FROM `$wpdb->options` WHERE `option_name` LIKE %s";
-		$sql_args = array( $wpdb->esc_like( 'jetpack_nonce_' ) . '%' );
-
-		if ( true !== $all ) {
-			$sql .= ' AND CAST( `option_value` AS UNSIGNED ) < %d';
-			$sql_args[] = time() - 3600;
-		}
-
-		$sql .= ' ORDER BY `option_id` LIMIT 100';
-
-		$sql = $wpdb->prepare( $sql, $sql_args );
-
-		for ( $i = 0; $i < 1000; $i++ ) {
-			if ( ! $wpdb->query( $sql ) ) {
-				break;
-			}
-		}
+		_deprecated_function( __METHOD__, 'jetpack-7.7', 'Automattic\\Jetpack\\Connection\\Manager::clean_nonces' );
+		return self::connection()->clean_nonces( $all );
 	}
 
 	/**
@@ -5598,7 +5473,6 @@ p {
 		if ( is_null( $is_site_publicly_accessible ) ) {
 			$is_site_publicly_accessible = false;
 
-			Jetpack::load_xml_rpc_client();
 			$rpc = new Jetpack_IXR_Client();
 
 			$success = $rpc->query( 'jetpack.isSitePubliclyAccessible', home_url() );
@@ -5638,7 +5512,6 @@ p {
 		$client_blog_id = is_multisite() ? $blog_id : 0;
 
 		if ( ! isset( $clients[$client_blog_id] ) ) {
-			Jetpack::load_xml_rpc_client();
 			$clients[$client_blog_id] = new Jetpack_IXR_ClientMulticall( array( 'user_id' => JETPACK_MASTER_USER, ) );
 			if ( function_exists( 'ignore_user_abort' ) ) {
 				ignore_user_abort( true );
@@ -5797,14 +5670,12 @@ p {
 	 * @param null|array $environment
 	 */
 	function verify_json_api_authorization_request( $environment = null ) {
-		require_once JETPACK__PLUGIN_DIR . 'class.jetpack-signature.php';
-
 		$environment = is_null( $environment )
 			? $_REQUEST
 			: $environment;
 
 		list( $envToken, $envVersion, $envUserId ) = explode( ':', $environment['token'] );
-		$token = Jetpack_Data::get_access_token( $envUserId );
+		$token = Jetpack_Data::get_access_token( $envUserId, $envToken );
 		if ( ! $token || empty( $token->secret ) ) {
 			wp_die( __( 'You must connect your Jetpack plugin to WordPress.com to use this feature.' , 'jetpack' ) );
 		}
@@ -5813,8 +5684,13 @@ p {
 
 		// Host has encoded the request URL, probably as a result of a bad http => https redirect
 		if ( Jetpack::is_redirect_encoded( $_GET['redirect_to'] ) ) {
-			JetpackTracking::record_user_event( 'error_double_encode' );
-
+			/**
+			 * Jetpack authorisation request Error.
+			 *
+			 * @since 7.5.0
+			 *
+			 */
+			do_action( 'jetpack_verify_api_authorization_request_error_double_encode' );
 			$die_error = sprintf(
 				/* translators: %s is a URL */
 				__( 'Your site is incorrectly double-encoding redirects from http to https. This is preventing Jetpack from authenticating your connection. Please visit our <a href="%s">support page</a> for details about how to resolve this.', 'jetpack' ),
@@ -5858,7 +5734,7 @@ p {
 		$timestamp = (int) $environment['timestamp'];
 		$nonce     = stripslashes( (string) $environment['nonce'] );
 
-		if ( ! $this->add_nonce( $timestamp, $nonce ) ) {
+		if ( ! $this->connection_manager->add_nonce( $timestamp, $nonce ) ) {
 			// De-nonce the nonce, at least for 5 minutes.
 			// We have to reuse this nonce at least once (used the first time when the initial request is made, used a second time when the login form is POSTed)
 			$old_nonce_time = get_option( "jetpack_nonce_{$timestamp}_{$nonce}" );
@@ -5912,7 +5788,9 @@ p {
 	 * Get $content_width, but with a <s>twist</s> filter.
 	 */
 	public static function get_content_width() {
-		$content_width = isset( $GLOBALS['content_width'] ) ? $GLOBALS['content_width'] : false;
+		$content_width = ( isset( $GLOBALS['content_width'] ) && is_numeric( $GLOBALS['content_width'] ) )
+			? $GLOBALS['content_width']
+			: false;
 		/**
 		 * Filter the Content Width value.
 		 *
@@ -5933,7 +5811,6 @@ p {
 	public function get_cloud_site_options( $option_names ) {
 		$option_names = array_filter( (array) $option_names, 'is_string' );
 
-		Jetpack::load_xml_rpc_client();
 		$xml = new Jetpack_IXR_Client( array( 'user_id' => JETPACK_MASTER_USER, ) );
 		$xml->query( 'jetpack.fetchSiteOptions', $option_names );
 		if ( $xml->isError() ) {
@@ -5975,14 +5852,15 @@ p {
 			'urls' => array(
 				'#\.staging\.wpengine\.com$#i', // WP Engine
 				'#\.staging\.kinsta\.com$#i',   // Kinsta.com
-				),
+				'#\.stage\.site$#i'             // DreamPress
+			),
 			'constants' => array(
 				'IS_WPE_SNAPSHOT',      // WP Engine
 				'KINSTA_DEV_ENV',       // Kinsta.com
 				'WPSTAGECOACH_STAGING', // WP Stagecoach
 				'JETPACK_STAGING_MODE', // Generic
-				)
-			);
+			)
+		);
 		/**
 		 * Filters the flags of known staging sites.
 		 *
@@ -6116,10 +5994,9 @@ p {
 		// in a transient to allow for autoloading and caching on subsequent views.
 		$local_options = get_transient( 'jetpack_idc_local' );
 		if ( false === $local_options ) {
-			require_once JETPACK__PLUGIN_DIR . 'sync/class.jetpack-sync-functions.php';
 			$local_options = array(
-				'home'    => Jetpack_Sync_Functions::home_url(),
-				'siteurl' => Jetpack_Sync_Functions::site_url(),
+				'home'    => Functions::home_url(),
+				'siteurl' => Functions::site_url(),
 			);
 			set_transient( 'jetpack_idc_local', $local_options, MINUTE_IN_SECONDS );
 		}
@@ -6153,10 +6030,10 @@ p {
 	 * @return bool
 	 */
 	public static function sync_idc_optin() {
-		if ( Jetpack_Constants::is_defined( 'JETPACK_SYNC_IDC_OPTIN' ) ) {
-			$default = Jetpack_Constants::get_constant( 'JETPACK_SYNC_IDC_OPTIN' );
+		if ( Constants::is_defined( 'JETPACK_SYNC_IDC_OPTIN' ) ) {
+			$default = Constants::get_constant( 'JETPACK_SYNC_IDC_OPTIN' );
 		} else {
-			$default = ! Jetpack_Constants::is_defined( 'SUNRISE' ) && ! is_multisite();
+			$default = ! Constants::is_defined( 'SUNRISE' ) && ! is_multisite();
 		}
 
 		/**
@@ -6384,6 +6261,7 @@ p {
 			'atd_http_post_timeout'                                  => null,
 			'atd_http_post_error'                                    => null,
 			'atd_service_domain'                                     => null,
+			'jetpack_widget_authors_exclude'                         => 'jetpack_widget_authors_params',
 		);
 
 		// This is a silly loop depth. Better way?
@@ -6558,6 +6436,24 @@ p {
 		return $tag;
 	}
 
+	/**
+	 * Add an async attribute to scripts that can be loaded asynchronously.
+	 * https://www.w3schools.com/tags/att_script_async.asp
+	 *
+	 * @since 7.7.0
+	 *
+	 * @param string $tag    The <script> tag for the enqueued script.
+	 * @param string $handle The script's registered handle.
+	 * @param string $src    The script's source URL.
+	 */
+	public function script_add_async( $tag, $handle, $src ) {
+		if ( in_array( $handle, $this->async_script_handles, true ) ) {
+			return preg_replace( '/^<script /i', '<script async ', $tag );
+		}
+
+		return $tag;
+	}
+
 	/*
 	 * Check the heartbeat data
 	 *
@@ -6683,13 +6579,14 @@ p {
 		}
 
 		if ( has_action( 'jetpack_dashboard_widget' ) ) {
+			$jetpack_logo = new Jetpack_Logo();
 			$widget_title = sprintf(
 				wp_kses(
 					/* translators: Placeholder is a Jetpack logo. */
 					__( 'Stats <span>by %s</span>', 'jetpack' ),
 					array( 'span' => array() )
 				),
-				Jetpack::get_jp_emblem( true )
+				$jetpack_logo->get_jp_emblem( true )
 			);
 
 			wp_add_dashboard_widget(
@@ -6698,6 +6595,7 @@ p {
 				array( __CLASS__, 'dashboard_widget' )
 			);
 			wp_enqueue_style( 'jetpack-dashboard-widget', plugins_url( 'css/dashboard-widget.css', JETPACK__PLUGIN_FILE ), array(), JETPACK__VERSION );
+			wp_style_add_data( 'jetpack-dashboard-widget', 'rtl', 'replace' );
 
 			// If we're inactive and not in development mode, sort our box to the top.
 			if ( ! self::is_active() && ! self::is_development_mode() ) {
@@ -6784,34 +6682,6 @@ p {
 		<?php
 	}
 
-	/**
-	 * Return string containing the Jetpack logo.
-	 *
-	 * @since 3.9.0
-	 *
-	 * @param bool $logotype Should we use the full logotype (logo + text). Default to false.
-	 *
-	 * @return string
-	 */
-	public static function get_jp_emblem( $logotype = false ) {
-		$logo = '<path fill="#00BE28" d="M16,0C7.2,0,0,7.2,0,16s7.2,16,16,16c8.8,0,16-7.2,16-16S24.8,0,16,0z M15.2,18.7h-8l8-15.5V18.7z M16.8,28.8 V13.3h8L16.8,28.8z"/>';
-		$text = '
-<path d="M41.3,26.6c-0.5-0.7-0.9-1.4-1.3-2.1c2.3-1.4,3-2.5,3-4.6V8h-3V6h6v13.4C46,22.8,45,24.8,41.3,26.6z" />
-<path d="M65,18.4c0,1.1,0.8,1.3,1.4,1.3c0.5,0,2-0.2,2.6-0.4v2.1c-0.9,0.3-2.5,0.5-3.7,0.5c-1.5,0-3.2-0.5-3.2-3.1V12H60v-2h2.1V7.1 H65V10h4v2h-4V18.4z" />
-<path d="M71,10h3v1.3c1.1-0.8,1.9-1.3,3.3-1.3c2.5,0,4.5,1.8,4.5,5.6s-2.2,6.3-5.8,6.3c-0.9,0-1.3-0.1-2-0.3V28h-3V10z M76.5,12.3 c-0.8,0-1.6,0.4-2.5,1.2v5.9c0.6,0.1,0.9,0.2,1.8,0.2c2,0,3.2-1.3,3.2-3.9C79,13.4,78.1,12.3,76.5,12.3z" />
-<path d="M93,22h-3v-1.5c-0.9,0.7-1.9,1.5-3.5,1.5c-1.5,0-3.1-1.1-3.1-3.2c0-2.9,2.5-3.4,4.2-3.7l2.4-0.3v-0.3c0-1.5-0.5-2.3-2-2.3 c-0.7,0-2.3,0.5-3.7,1.1L84,11c1.2-0.4,3-1,4.4-1c2.7,0,4.6,1.4,4.6,4.7L93,22z M90,16.4l-2.2,0.4c-0.7,0.1-1.4,0.5-1.4,1.6 c0,0.9,0.5,1.4,1.3,1.4s1.5-0.5,2.3-1V16.4z" />
-<path d="M104.5,21.3c-1.1,0.4-2.2,0.6-3.5,0.6c-4.2,0-5.9-2.4-5.9-5.9c0-3.7,2.3-6,6.1-6c1.4,0,2.3,0.2,3.2,0.5V13 c-0.8-0.3-2-0.6-3.2-0.6c-1.7,0-3.2,0.9-3.2,3.6c0,2.9,1.5,3.8,3.3,3.8c0.9,0,1.9-0.2,3.2-0.7V21.3z" />
-<path d="M110,15.2c0.2-0.3,0.2-0.8,3.8-5.2h3.7l-4.6,5.7l5,6.3h-3.7l-4.2-5.8V22h-3V6h3V15.2z" />
-<path d="M58.5,21.3c-1.5,0.5-2.7,0.6-4.2,0.6c-3.6,0-5.8-1.8-5.8-6c0-3.1,1.9-5.9,5.5-5.9s4.9,2.5,4.9,4.9c0,0.8,0,1.5-0.1,2h-7.3 c0.1,2.5,1.5,2.8,3.6,2.8c1.1,0,2.2-0.3,3.4-0.7C58.5,19,58.5,21.3,58.5,21.3z M56,15c0-1.4-0.5-2.9-2-2.9c-1.4,0-2.3,1.3-2.4,2.9 C51.6,15,56,15,56,15z" />
-		';
-
-		return sprintf(
-			'<svg id="jetpack-logo__icon" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 %1$s 32">%2$s</svg>',
-			( true === $logotype ? '118' : '32' ),
-			( true === $logotype ? $logo . $text : $logo )
-		);
-	}
-
 	/*
 	 * Adds a "blank" column in the user admin table to display indication of user connection.
 	 */
@@ -6825,10 +6695,11 @@ p {
 	 */
 	function jetpack_show_user_connected_icon( $val, $col, $user_id ) {
 		if ( 'user_jetpack' == $col && Jetpack::is_user_connected( $user_id ) ) {
+			$jetpack_logo = new Jetpack_Logo();
 			$emblem_html = sprintf(
 				'<a title="%1$s" class="jp-emblem-user-admin">%2$s</a>',
 				esc_attr__( 'This user is linked and ready to fly with Jetpack.', 'jetpack' ),
-				Jetpack::get_jp_emblem()
+				$jetpack_logo->get_jp_emblem()
 			);
 			return $emblem_html;
 		}
@@ -6905,34 +6776,12 @@ p {
 	}
 
 	/**
-	 * Checks if one or more function names is in debug_backtrace
+	 * @deprecated
 	 *
-	 * @param $names Mixed string name of function or array of string names of functions
-	 *
-	 * @return bool
+	 * @see Automattic\Jetpack\Sync\Modules\Users::is_function_in_backtrace
 	 */
-	public static function is_function_in_backtrace( $names ) {
-		$backtrace = debug_backtrace( false ); // phpcs:ignore PHPCompatibility.FunctionUse.NewFunctionParameters.debug_backtrace_optionsFound
-		if ( ! is_array( $names ) ) {
-			$names = array( $names );
-		}
-		$names_as_keys = array_flip( $names );
-
-		//Do check in constant O(1) time for PHP5.5+
-		if ( function_exists( 'array_column' ) ) {
-			$backtrace_functions = array_column( $backtrace, 'function' ); // phpcs:ignore PHPCompatibility.FunctionUse.NewFunctions.array_columnFound
-			$backtrace_functions_as_keys = array_flip( $backtrace_functions );
-			$intersection = array_intersect_key( $backtrace_functions_as_keys, $names_as_keys );
-			return ! empty ( $intersection );
-		}
-
-		//Do check in linear O(n) time for < PHP5.5 ( using isset at least prevents O(n^2) )
-		foreach ( $backtrace as $call ) {
-			if ( isset( $names_as_keys[ $call['function'] ] ) ) {
-				return true;
-			}
-		}
-		return false;
+	public static function is_function_in_backtrace() {
+		_deprecated_function( __METHOD__, 'jetpack-7.6.0' );
 	}
 
 	/**
@@ -6949,11 +6798,7 @@ p {
 	 * @return string The URL to the file
 	 */
 	public static function get_file_url_for_environment( $min_path, $non_min_path ) {
-		$path = ( Jetpack_Constants::is_defined( 'SCRIPT_DEBUG' ) && Jetpack_Constants::get_constant( 'SCRIPT_DEBUG' ) )
-			? $non_min_path
-			: $min_path;
-
-		return plugins_url( $path, JETPACK__PLUGIN_FILE );
+		return Assets::get_file_url_for_environment( $min_path, $non_min_path );
 	}
 
 	/**
@@ -6979,6 +6824,30 @@ p {
 			set_transient( 'jetpack_rewind_enabled', $rewind_enabled, 10 * MINUTE_IN_SECONDS );
 		}
 		return $rewind_enabled;
+	}
+
+	/**
+	 * Return Calypso environment value; used for developing Jetpack and pairing
+	 * it with different Calypso enrionments, such as localhost.
+	 *
+	 * @since 7.4.0
+	 *
+	 * @return string Calypso environment
+	 */
+	public static function get_calypso_env() {
+		if ( isset( $_GET['calypso_env'] ) ) {
+			return sanitize_key( $_GET['calypso_env'] );
+		}
+
+		if ( getenv( 'CALYPSO_ENV' ) ) {
+			return sanitize_key( getenv( 'CALYPSO_ENV' ) );
+		}
+
+		if ( defined( 'CALYPSO_ENV' ) && CALYPSO_ENV ) {
+			return sanitize_key( CALYPSO_ENV );
+		}
+
+		return '';
 	}
 
 	/**
@@ -7091,5 +6960,12 @@ p {
 				delete_user_meta( $user_id, $meta_key );
 			}
 		}
+	}
+
+	function is_active_and_not_development_mode( $maybe ) {
+		if ( ! \Jetpack::is_active() || \Jetpack::is_development_mode() ) {
+			return false;
+		}
+		return true;
 	}
 }

@@ -3,7 +3,7 @@
  * Enable and validate Pro version licensing.
  *
  * @package   Block_Lab
- * @copyright Copyright(c) 2018, Block Lab
+ * @copyright Copyright(c) 2019, Block Lab
  * @license   http://opensource.org/licenses/GPL-2.0 GNU General Public License, version 2 (GPL-2.0)
  */
 
@@ -30,6 +30,23 @@ class License extends Component_Abstract {
 	public $product_slug;
 
 	/**
+	 * The name of the license key transient.
+	 *
+	 * @var string
+	 */
+	const TRANSIENT_NAME = 'block_lab_license';
+
+	/**
+	 * The transient 'license' value for when the request to validate the Pro license failed.
+	 *
+	 * This is for when the actual POST request fails,
+	 * not for when it returns that the license is invalid.
+	 *
+	 * @var string
+	 */
+	const REQUEST_FAILED = 'request_failed';
+
+	/**
 	 * Initialise the Pro component.
 	 */
 	public function init() {
@@ -41,7 +58,7 @@ class License extends Component_Abstract {
 	 * Register any hooks that this component needs.
 	 */
 	public function register_hooks() {
-		add_filter( 'pre_update_option_block_lab_license_key', array( $this, 'save_license_key' ), 10, 1 );
+		add_filter( 'pre_update_option_block_lab_license_key', array( $this, 'save_license_key' ) );
 	}
 
 	/**
@@ -53,10 +70,15 @@ class License extends Component_Abstract {
 	 */
 	public function save_license_key( $key ) {
 		$this->activate_license( $key );
+		$license = get_transient( self::TRANSIENT_NAME );
 
 		if ( ! $this->is_valid() ) {
 			$key = '';
-			block_lab()->admin->settings->prepare_notice( $this->license_error_message() );
+			if ( isset( $license['license'] ) && self::REQUEST_FAILED === $license['license'] ) {
+				block_lab()->admin->settings->prepare_notice( $this->license_request_failed_message() );
+			} else {
+				block_lab()->admin->settings->prepare_notice( $this->license_invalid_message() );
+			}
 		} else {
 			block_lab()->admin->settings->prepare_notice( $this->license_success_message() );
 		}
@@ -87,13 +109,13 @@ class License extends Component_Abstract {
 	 * @return mixed
 	 */
 	public function get_license() {
-		$license = get_transient( 'block_lab_license' );
+		$license = get_transient( self::TRANSIENT_NAME );
 
 		if ( ! $license ) {
 			$key = get_option( 'block_lab_license_key' );
 			if ( ! empty( $key ) ) {
 				$this->activate_license( $key );
-				$license = get_transient( 'block_lab_license' );
+				$license = get_transient( self::TRANSIENT_NAME );
 			}
 		}
 
@@ -104,8 +126,6 @@ class License extends Component_Abstract {
 	 * Try to activate the license.
 	 *
 	 * @param string $key The license key to activate.
-	 *
-	 * @return bool
 	 */
 	public function activate_license( $key ) {
 		// Data to send in our API request.
@@ -120,20 +140,21 @@ class License extends Component_Abstract {
 		$response = wp_remote_post(
 			$this->store_url,
 			array(
-				'timeout'   => 15,
+				'timeout'   => 10,
 				'sslverify' => true,
 				'body'      => $api_params,
 			)
 		);
 
 		if ( is_wp_error( $response ) ) {
-			return false;
+			$license = array( 'license' => self::REQUEST_FAILED );
+		} else {
+			$license = json_decode( wp_remote_retrieve_body( $response ), true );
 		}
 
-		$license    = json_decode( wp_remote_retrieve_body( $response ), true );
 		$expiration = DAY_IN_SECONDS;
 
-		set_transient( 'block_lab_license', $license, $expiration );
+		set_transient( self::TRANSIENT_NAME, $license, $expiration );
 	}
 
 	/**
@@ -147,11 +168,33 @@ class License extends Component_Abstract {
 	}
 
 	/**
+	 * Admin notice for the license request failing.
+	 *
+	 * This is for when the validation request fails entirely, like with a 404.
+	 * Not for when it returns that the license is invalid.
+	 *
+	 * @return string
+	 */
+	public function license_request_failed_message() {
+		$message = sprintf(
+			/* translators: %s is an HTML link to contact support */
+			__( 'There was a problem activating the license, but it may not be invalid. If the problem persists, please %s.', 'block-lab' ),
+			sprintf(
+				'<a href="%1$s">%2$s</a>',
+				'mailto:hi@getblocklab.com?subject=There was a problem activating my Block Lab Pro license',
+				esc_html__( 'contact support', 'block-lab' )
+			)
+		);
+
+		return sprintf( '<div class="notice notice-error"><p>%s</p></div>', wp_kses_post( $message ) );
+	}
+
+	/**
 	 * Admin notice for incorrect license details.
 	 *
 	 * @return string
 	 */
-	public function license_error_message() {
+	public function license_invalid_message() {
 		$message = __( 'There was a problem activating your Block Lab license.', 'block-lab' );
 		return sprintf( '<div class="notice notice-error"><p>%s</p></div>', esc_html( $message ) );
 	}

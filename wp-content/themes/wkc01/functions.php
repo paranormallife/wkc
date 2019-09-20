@@ -99,6 +99,7 @@ function asw_add_meta() {
 	add_meta_box('hero_subtitle_field', 'Subtitle', 'hero_subtitle', array('hero'), 'normal', 'high');
 	add_meta_box('hero_summary_field', 'Summary', 'hero_summary', array('hero'), 'normal', 'high');
 	add_meta_box('hero_url_field', 'URL', 'hero_url', array('hero'), 'normal', 'high');
+	add_meta_box('event_video_field', 'Video Embed Code', 'event_video', array('eventbrite_events'), 'normal', 'high');
 }
 
 function hero_subtitle($post) {
@@ -116,6 +117,12 @@ function hero_summary($post) {
 function hero_url($post) {
     echo '<div id="hero_url">';
     echo '<input type="text" style="width:95%;" id="hero_url" name="hero_url" placeholder="/page-permalink" value="' . get_post_meta($post->ID, 'hero_url', true) . '" />';
+    echo '</div>';
+}
+
+function event_video($post) {
+    echo '<div id="event_video">';
+    echo '<input type="text" style="width:95%;" id="event_video" name="event_video" placeholder="Video Embed Code" value="' . get_post_meta($post->ID, 'event_video', true) . '" />';
     echo '</div>';
 }
 
@@ -141,6 +148,10 @@ function asw_save_meta($post_id) {
 
     if (isset($_POST['hero_url'])) {
        update_post_meta($post_id, 'hero_url', $_POST['hero_url']);
+    }
+
+    if (isset($_POST['event_video'])) {
+       update_post_meta($post_id, 'event_video', $_POST['event_video']);
     }
 	
 }
